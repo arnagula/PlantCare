@@ -1,0 +1,119 @@
+Processing display-adapter (platform: espressif32@6.10.0; board: seeed_xiao_esp32s3; framework: arduino)
+--------------------------------------------------------------------------------
+Library Manager: Installing 256dpi/MQTT @ 2.5.2
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: MQTT@2.5.2 has been installed!
+Library Manager: Installing bblanchon/ArduinoJson @ 7.3.1
+Unpacking 0% 10% 20% 30% 40% 50% 60% 70% 80% 90% 100%
+Library Manager: ArduinoJson@7.3.1 has been installed!
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/seeed_xiao_esp32s3.html
+PLATFORM: Espressif 32 (6.10.0) > Seeed Studio XIAO ESP32S3
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-builtin, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 1.40501.0 (4.5.1) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+Converting display_compile.ino
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 35 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- MQTT @ 2.5.2
+|-- ArduinoJson @ 7.3.1
+|-- WiFi @ 2.0.0
+|-- WiFiClientSecure @ 2.0.0
+Building in release mode
+Compiling .pio/build/display-adapter/src/display_compile.ino.cpp.o
+Building .pio/build/display-adapter/bootloader.bin
+Generating partitions .pio/build/display-adapter/partitions.bin
+esptool.py v4.5.1
+Creating esp32s3 image...
+Merged 1 ELF section
+Successfully created esp32s3 image.
+Compiling .pio/build/display-adapter/libb8b/MQTT/MQTTClient.cpp.o
+Compiling .pio/build/display-adapter/libb8b/MQTT/lwmqtt/client.c.o
+Compiling .pio/build/display-adapter/libb8b/MQTT/lwmqtt/helpers.c.o
+Compiling .pio/build/display-adapter/libb8b/MQTT/lwmqtt/packet.c.o
+Compiling .pio/build/display-adapter/libb8b/MQTT/lwmqtt/string.c.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFi.cpp.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiAP.cpp.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiClient.cpp.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiGeneric.cpp.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiMulti.cpp.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiSTA.cpp.o
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiScan.cpp.o
+Archiving .pio/build/display-adapter/libb8b/libMQTT.a
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiServer.cpp.o
+Indexing .pio/build/display-adapter/libb8b/libMQTT.a
+Compiling .pio/build/display-adapter/libe97/WiFi/WiFiUdp.cpp.o
+Compiling .pio/build/display-adapter/libdbb/WiFiClientSecure/WiFiClientSecure.cpp.o
+Compiling .pio/build/display-adapter/libdbb/WiFiClientSecure/esp_crt_bundle.c.o
+Compiling .pio/build/display-adapter/libdbb/WiFiClientSecure/ssl_client.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/Esp.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/FirmwareMSC.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/FunctionalInterrupt.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/HWCDC.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/HardwareSerial.cpp.o
+Archiving .pio/build/display-adapter/libe97/libWiFi.a
+Compiling .pio/build/display-adapter/FrameworkArduino/IPAddress.cpp.o
+Indexing .pio/build/display-adapter/libe97/libWiFi.a
+Compiling .pio/build/display-adapter/FrameworkArduino/IPv6Address.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/MD5Builder.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/Print.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/Stream.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/StreamString.cpp.o
+Archiving .pio/build/display-adapter/libdbb/libWiFiClientSecure.a
+Indexing .pio/build/display-adapter/libdbb/libWiFiClientSecure.a
+Compiling .pio/build/display-adapter/FrameworkArduino/Tone.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/USB.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/USBCDC.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/USBMSC.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/WMath.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/WString.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/base64.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/cbuf.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-adc.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-bt.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-cpu.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-dac.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-gpio.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-i2c-slave.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-i2c.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-ledc.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-matrix.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-misc.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-psram.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-rgb-led.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-rmt.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-sigmadelta.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-spi.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-time.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-timer.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-tinyusb.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-touch.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/esp32-hal-uart.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/firmware_msc_fat.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/libb64/cdecode.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/libb64/cencode.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/main.cpp.o
+Compiling .pio/build/display-adapter/FrameworkArduino/stdlib_noniso.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/wiring_pulse.c.o
+Compiling .pio/build/display-adapter/FrameworkArduino/wiring_shift.c.o
+Archiving .pio/build/display-adapter/libFrameworkArduino.a
+Indexing .pio/build/display-adapter/libFrameworkArduino.a
+Linking .pio/build/display-adapter/firmware.elf
+Retrieving maximum program size .pio/build/display-adapter/firmware.elf
+Checking size .pio/build/display-adapter/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [=         ]   5.6% (used 18420 bytes from 327680 bytes)
+Flash: [=         ]   7.7% (used 257589 bytes from 3342336 bytes)
+Building .pio/build/display-adapter/firmware.bin
+esptool.py v4.5.1
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+========================= [SUCCESS] Took 31.13 seconds =========================

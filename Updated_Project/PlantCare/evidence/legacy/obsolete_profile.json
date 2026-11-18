@@ -1,0 +1,39 @@
+{
+  "plant": "Epipremnum aureum",
+  "revision": "v1",
+  "night": {
+    "timezone": "America/New_York",
+    "start": "20:00",
+    "end": "08:00"
+  },
+  "thresholds": {
+    "light_enter_lux": 1100,
+    "light_exit_lux": 1300,
+    "cold_enter_c": 16,
+    "cold_exit_c": 17,
+    "hot_enter_c": 27,
+    "hot_exit_c": 26,
+    "humidity_enter_pct": 50,
+    "humidity_exit_pct": 55
+  },
+  "soil": {
+    "dry_enter_pct": null,
+    "dry_exit_pct": null,
+    "wet_exit_pct": null,
+    "wet_enter_pct": null
+  },
+  "watering": {
+    "qualified": false,
+    "enabled": false,
+    "dose_ms": null,
+    "hard_max_ms": null,
+    "cooldown_s": null,
+    "response_wait_s": null,
+    "min_rise_pct": null
+  },
+  "classification": {
+    "model_enabled": false,
+    "model_version": null,
+    "fall_back_to_rules": true
+  }
+}

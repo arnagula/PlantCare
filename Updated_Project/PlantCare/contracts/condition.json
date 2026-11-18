@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "mode": "live",
+  "profile": "normal",
+  "ts": "2026-11-16T14:00:01.000Z",
+  "report_seq": 18,
+  "backend_boot_id": "aws-lambda",
+  "profile_revision": "v1",
+  "sample_ts": "2026-11-16T14:00:00.000Z",
+  "source": {
+    "device_id": "sensor-01",
+    "boot_id": "boot-a81f",
+    "seq": 42
+  },
+  "freshness_timeout_s": 180,
+  "data_status": "uncalibrated",
+  "invalid_fields": [
+    "soil_pct"
+  ],
+  "state": "unknown",
+  "mood": "regular",
+  "issues": [],
+  "reason": "Soil calibration pending",
+  "details": [],
+  "watering": {
+    "stage": "DISARMED",
+    "pump_on": false,
+    "command_id": null,
+    "cooldown_remaining_s": 0,
+    "fault": null
+  }
+}

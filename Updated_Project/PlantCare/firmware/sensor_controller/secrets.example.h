@@ -1,0 +1,14 @@
+#pragma once
+
+constexpr char WIFI_SSID[] = "YOUR_SSID";
+constexpr char WIFI_PASSWORD[] = "YOUR_WIFI_PASSWORD";
+constexpr char AWS_ENDPOINT[] = "YOUR_DATA_ATS_HOSTNAME";
+constexpr char AWS_ROOT_CA[] = R"PEM(
+PASTE AMAZON ROOT CA PEM HERE
+)PEM";
+constexpr char AWS_DEVICE_CERT[] = R"PEM(
+PASTE DEVICE CERTIFICATE PEM HERE
+)PEM";
+constexpr char AWS_PRIVATE_KEY[] = R"PEM(
+PASTE DEVICE PRIVATE KEY PEM HERE
+)PEM";

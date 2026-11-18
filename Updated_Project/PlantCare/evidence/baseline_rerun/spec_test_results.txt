@@ -1,0 +1,488 @@
+test_demo_freshness_ten_seconds (__main__.Behavior.test_demo_freshness_ten_seconds) ... FAIL
+test_first_low_light_sample_does_not_activate (__main__.Behavior.test_first_low_light_sample_does_not_activate) ... FAIL
+test_four_second_dip_no_alert (__main__.Behavior.test_four_second_dip_no_alert) ... FAIL
+test_future_more_than_five_seconds_rejected (__main__.Behavior.test_future_more_than_five_seconds_rejected) ... FAIL
+test_happy_baseline (__main__.Behavior.test_happy_baseline) ... ok
+test_hysteresis_gap_holds (__main__.Behavior.test_hysteresis_gap_holds) ... FAIL
+test_invalid_fields_identified (__main__.Behavior.test_invalid_fields_identified) ... FAIL
+test_invalid_profile_thresholds_rejected (__main__.Behavior.test_invalid_profile_thresholds_rejected) ... FAIL
+test_issue_details_present (__main__.Behavior.test_issue_details_present) ... FAIL
+test_low_humidity_mild (__main__.Behavior.test_low_humidity_mild) ... ok
+test_multiple_issues_preserved (__main__.Behavior.test_multiple_issues_preserved) ... ok
+test_night_suppression (__main__.Behavior.test_night_suppression) ... FAIL
+test_no_excess_light_rule (__main__.Behavior.test_no_excess_light_rule) ... ok
+test_no_high_humidity_rule (__main__.Behavior.test_no_high_humidity_rule) ... ok
+test_other_valid_issues_survive_invalid_sensor (__main__.Behavior.test_other_valid_issues_survive_invalid_sensor) ... ok
+test_pump_fault_visible (__main__.Behavior.test_pump_fault_visible) ... FAIL
+test_pump_on_not_reported_off (__main__.Behavior.test_pump_on_not_reported_off) ... FAIL
+test_reason_ascii_length (__main__.Behavior.test_reason_ascii_length) ... ok
+test_recovery_not_immediate (__main__.Behavior.test_recovery_not_immediate) ... FAIL
+test_stale_cannot_be_happy (__main__.Behavior.test_stale_cannot_be_happy) ... FAIL
+test_twelve_second_low_light_alert (__main__.Behavior.test_twelve_second_low_light_alert) ... ok
+test_unqualified_profile_not_happy_for_dry_claim (__main__.Behavior.test_unqualified_profile_not_happy_for_dry_claim) ... FAIL
+test_duplicate_one_history_identity (__main__.Cloud.test_duplicate_one_history_identity) ... ok
+test_mode_mismatch_no_side_effects (__main__.Cloud.test_mode_mismatch_no_side_effects) ... ok
+test_mqtt_failure_then_retry_one_stored_identity (__main__.Cloud.test_mqtt_failure_then_retry_one_stored_identity) ... ok
+test_old_duplicate_cannot_restore_previous_condition (__main__.Cloud.test_old_duplicate_cannot_restore_previous_condition) ... FAIL
+test_old_sample_cannot_replace_retained_latest (__main__.Cloud.test_old_sample_cannot_replace_retained_latest) ... FAIL
+test_receipt_time_stored_separately (__main__.Cloud.test_receipt_time_stored_separately) ... FAIL
+test_report_identity_unique_across_sensor_boots (__main__.Cloud.test_report_identity_unique_across_sensor_boots) ... FAIL
+test_retained_qos1_correct_live_topic (__main__.Cloud.test_retained_qos1_correct_live_topic) ... ok
+test_same_identity_changed_payload_cannot_overwrite (__main__.Cloud.test_same_identity_changed_payload_cannot_overwrite) ... FAIL
+test_simulation_topic_isolated (__main__.Cloud.test_simulation_topic_isolated) ... ok
+test_bad_mode (__main__.Contracts.test_bad_mode) ... ok
+test_bool_temperature (__main__.Contracts.test_bool_temperature) ... ok
+test_empty_id (__main__.Contracts.test_empty_id) ... ok
+test_humidity_above_100 (__main__.Contracts.test_humidity_above_100) ... ok
+test_invalid_metric_missing_value (__main__.Contracts.test_invalid_metric_missing_value) ... FAIL
+test_invalid_metric_nonnull (__main__.Contracts.test_invalid_metric_nonnull) ... ok
+test_invalid_raw_nonnull (__main__.Contracts.test_invalid_raw_nonnull) ... FAIL
+test_invalid_soil_nonnull_pct (__main__.Contracts.test_invalid_soil_nonnull_pct) ... FAIL
+test_long_calibration_id (__main__.Contracts.test_long_calibration_id) ... FAIL
+test_long_id (__main__.Contracts.test_long_id) ... ok
+test_missing_profile (__main__.Contracts.test_missing_profile) ... FAIL
+test_missing_pump (__main__.Contracts.test_missing_pump) ... FAIL
+test_missing_sample_interval_s (__main__.Contracts.test_missing_sample_interval_s) ... FAIL
+test_missing_uptime_ms (__main__.Contracts.test_missing_uptime_ms) ... FAIL
+test_naive_timestamp (__main__.Contracts.test_naive_timestamp) ... ok
+test_negative_lux (__main__.Contracts.test_negative_lux) ... ok
+test_negative_raw (__main__.Contracts.test_negative_raw) ... FAIL
+test_negative_uptime (__main__.Contracts.test_negative_uptime) ... FAIL
+test_noncanonical_utc (__main__.Contracts.test_noncanonical_utc) ... FAIL
+test_nonnumeric_interval (__main__.Contracts.test_nonnumeric_interval) ... FAIL
+test_nonutc (__main__.Contracts.test_nonutc) ... FAIL
+test_oversize_payload (__main__.Contracts.test_oversize_payload) ... FAIL
+test_pump_negative_cooldown (__main__.Contracts.test_pump_negative_cooldown) ... FAIL
+test_pump_not_object (__main__.Contracts.test_pump_not_object) ... FAIL
+test_raw_valid_not_bool (__main__.Contracts.test_raw_valid_not_bool) ... FAIL
+test_schema_bool (__main__.Contracts.test_schema_bool) ... FAIL
+test_schema_unknown (__main__.Contracts.test_schema_unknown) ... ok
+test_seq_bool (__main__.Contracts.test_seq_bool) ... ok
+test_seq_float (__main__.Contracts.test_seq_float) ... ok
+test_seq_zero (__main__.Contracts.test_seq_zero) ... ok
+test_soil_above_100 (__main__.Contracts.test_soil_above_100) ... ok
+test_soil_bool (__main__.Contracts.test_soil_bool) ... ok
+test_soil_missing_calibration_id (__main__.Contracts.test_soil_missing_calibration_id) ... FAIL
+test_soil_missing_raw (__main__.Contracts.test_soil_missing_raw) ... FAIL
+test_soil_missing_raw_valid (__main__.Contracts.test_soil_missing_raw_valid) ... FAIL
+test_soil_nan (__main__.Contracts.test_soil_nan) ... ok
+test_string_raw (__main__.Contracts.test_string_raw) ... FAIL
+test_temperature_infinity (__main__.Contracts.test_temperature_infinity) ... ok
+test_temperature_nan (__main__.Contracts.test_temperature_nan) ... ok
+test_unknown_profile (__main__.Contracts.test_unknown_profile) ... FAIL
+test_zero_interval (__main__.Contracts.test_zero_interval) ... FAIL
+test_fractional_raw_not_truncated (__main__.Logger.test_fractional_raw_not_truncated) ... FAIL
+test_soil_disconnected_row_preserved (__main__.Logger.test_soil_disconnected_row_preserved) ... FAIL
+test_valid_complete_row (__main__.Logger.test_valid_complete_row) ... ok
+test_invalid_metric_null (__main__.ValidContracts.test_invalid_metric_null) ... ok
+test_uncalibrated_null (__main__.ValidContracts.test_uncalibrated_null) ... ok
+test_unknown_small_extra_ignored (__main__.ValidContracts.test_unknown_small_extra_ignored) ... ok
+test_valid (__main__.ValidContracts.test_valid) ... ok
+
+======================================================================
+FAIL: test_demo_freshness_ten_seconds (__main__.Behavior.test_demo_freshness_ten_seconds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 93, in test_demo_freshness_ten_seconds
+    def test_demo_freshness_ten_seconds(self):self.assertEqual(self.assess()['freshness_timeout_s'],10)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 180 != 10
+
+======================================================================
+FAIL: test_first_low_light_sample_does_not_activate (__main__.Behavior.test_first_low_light_sample_does_not_activate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 64, in test_first_low_light_sample_does_not_activate
+    p=packet();p['light_lux']['value']=800;self.assertNotIn('low_light',self.assess(p)['issues'])
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'low_light' unexpectedly found in ['low_light']
+
+======================================================================
+FAIL: test_four_second_dip_no_alert (__main__.Behavior.test_four_second_dip_no_alert)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 68, in test_four_second_dip_no_alert
+    self.assertNotIn('low_light',self.assess(p)['issues'])
+AssertionError: 'low_light' unexpectedly found in ['low_light']
+
+======================================================================
+FAIL: test_future_more_than_five_seconds_rejected (__main__.Behavior.test_future_more_than_five_seconds_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 92, in test_future_more_than_five_seconds_rejected
+    with self.assertRaises(ValueError):self.assess(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_hysteresis_gap_holds (__main__.Behavior.test_hysteresis_gap_holds)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 77, in test_hysteresis_gap_holds
+    self.assertIn('low_light',self.assess(p)['issues'])
+AssertionError: 'low_light' not found in []
+
+======================================================================
+FAIL: test_invalid_fields_identified (__main__.Behavior.test_invalid_fields_identified)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 95, in test_invalid_fields_identified
+    p=packet();p['light_lux']={'value':None,'valid':False};self.assertIn('light_lux',self.assess(p)['invalid_fields'])
+                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'light_lux' not found in []
+
+======================================================================
+FAIL: test_invalid_profile_thresholds_rejected (__main__.Behavior.test_invalid_profile_thresholds_rejected)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 116, in test_invalid_profile_thresholds_rejected
+    with self.assertRaises(ValueError):process_packet(packet(),prof)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_issue_details_present (__main__.Behavior.test_issue_details_present)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 98, in test_issue_details_present
+    self.assertTrue(r['details'],'Active issue has no reading/threshold/recommendation')
+AssertionError: [] is not true : Active issue has no reading/threshold/recommendation
+
+======================================================================
+FAIL: test_night_suppression (__main__.Behavior.test_night_suppression)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 86, in test_night_suppression
+    self.assertNotIn('low_light',self.assess(p)['issues'])
+AssertionError: 'low_light' unexpectedly found in ['low_light']
+
+======================================================================
+FAIL: test_pump_fault_visible (__main__.Behavior.test_pump_fault_visible)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 121, in test_pump_fault_visible
+    p=packet();p['pump']['fault']='interrupted_run';self.assertEqual(self.assess(p)['state'],'watering_fault')
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'happy' != 'watering_fault'
+- happy
++ watering_fault
+
+
+======================================================================
+FAIL: test_pump_on_not_reported_off (__main__.Behavior.test_pump_on_not_reported_off)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 119, in test_pump_on_not_reported_off
+    self.assertTrue(self.assess(p)['watering']['pump_on'])
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_recovery_not_immediate (__main__.Behavior.test_recovery_not_immediate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 82, in test_recovery_not_immediate
+    self.assertIn('low_light',self.assess(p)['issues'])
+AssertionError: 'low_light' not found in []
+
+======================================================================
+FAIL: test_stale_cannot_be_happy (__main__.Behavior.test_stale_cannot_be_happy)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 89, in test_stale_cannot_be_happy
+    self.assertEqual((r['state'],r['data_status']),('unknown','stale'))
+AssertionError: Tuples differ: ('happy', 'ok') != ('unknown', 'stale')
+
+First differing element 0:
+'happy'
+'unknown'
+
+- ('happy', 'ok')
++ ('unknown', 'stale')
+
+======================================================================
+FAIL: test_unqualified_profile_not_happy_for_dry_claim (__main__.Behavior.test_unqualified_profile_not_happy_for_dry_claim)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 113, in test_unqualified_profile_not_happy_for_dry_claim
+    self.assertNotEqual(r['state'],'happy','No qualified soil thresholds exist')
+AssertionError: 'happy' == 'happy' : No qualified soil thresholds exist
+
+======================================================================
+FAIL: test_old_duplicate_cannot_restore_previous_condition (__main__.Cloud.test_old_duplicate_cannot_restore_previous_condition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 148, in test_old_duplicate_cannot_restore_previous_condition
+    self.assertEqual(json.loads(self.aws.publications[-1]['payload'])['source']['seq'],2)
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_old_sample_cannot_replace_retained_latest (__main__.Cloud.test_old_sample_cannot_replace_retained_latest)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 154, in test_old_sample_cannot_replace_retained_latest
+    latest=json.loads(self.aws.publications[-1]['payload']);self.assertEqual(latest['source']['seq'],2)
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 1 != 2
+
+======================================================================
+FAIL: test_receipt_time_stored_separately (__main__.Cloud.test_receipt_time_stored_separately)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 156, in test_receipt_time_stored_separately
+    lambda_handler(packet(),None);self.assertIn('received_at',self.aws.writes[0]['Item'])
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'received_at' not found in {'device': {'S': '["live", "sensor-01"]'}, 'sample': {'S': '["boot-a81f", 1]'}, 'ts': {'S': '2026-11-12T15:00:00.000Z'}, 'telemetry': {'S': '{"schema": 1, "mode": "live", "profile": "demo", "device_id": "sensor-01", "boot_id": "boot-a81f", "seq": 1, "ts": "2026-11-12T15:00:00.000Z", "uptime_ms": 125000, "sample_interval_s": 2, "config_id": "cfg-unqualified", "temperature_c": {"value": 23.2, "valid": true}, "humidity_pct": {"value": 60, "valid": true}, "light_lux": {"value": 1500, "valid": true}, "soil": {"raw": 360, "raw_valid": true, "pct": 50, "valid": true, "calibrated": true, "calibration_id": "sim-qualified"}, "pump": {"on": false, "armed": false, "fault": null, "active_command_id": null, "cooldown_remaining_s": 0}}'}}
+
+======================================================================
+FAIL: test_report_identity_unique_across_sensor_boots (__main__.Cloud.test_report_identity_unique_across_sensor_boots)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 159, in test_report_identity_unique_across_sensor_boots
+    self.assertNotEqual((r1['backend_boot_id'],r1['report_seq']),(r2['backend_boot_id'],r2['report_seq']))
+AssertionError: ('lambda-prototype', 1) == ('lambda-prototype', 1)
+
+======================================================================
+FAIL: test_same_identity_changed_payload_cannot_overwrite (__main__.Cloud.test_same_identity_changed_payload_cannot_overwrite)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 151, in test_same_identity_changed_payload_cannot_overwrite
+    self.assertEqual(self.aws.rows,before)
+AssertionError: {('["[426 chars]ue": 40, "valid": true}, "humidity_pct": {"val[298 chars]}'}}} != {('["[426 chars]ue": 23.2, "valid": true}, "humidity_pct": {"v[300 chars]}'}}}
+Diff is 5468 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_invalid_metric_missing_value (__main__.Contracts.test_invalid_metric_missing_value)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_invalid_raw_nonnull (__main__.Contracts.test_invalid_raw_nonnull)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_invalid_soil_nonnull_pct (__main__.Contracts.test_invalid_soil_nonnull_pct)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_long_calibration_id (__main__.Contracts.test_long_calibration_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_missing_profile (__main__.Contracts.test_missing_profile)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_missing_pump (__main__.Contracts.test_missing_pump)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_missing_sample_interval_s (__main__.Contracts.test_missing_sample_interval_s)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_missing_uptime_ms (__main__.Contracts.test_missing_uptime_ms)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_negative_raw (__main__.Contracts.test_negative_raw)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_negative_uptime (__main__.Contracts.test_negative_uptime)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_noncanonical_utc (__main__.Contracts.test_noncanonical_utc)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_nonnumeric_interval (__main__.Contracts.test_nonnumeric_interval)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_nonutc (__main__.Contracts.test_nonutc)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_oversize_payload (__main__.Contracts.test_oversize_payload)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_pump_negative_cooldown (__main__.Contracts.test_pump_negative_cooldown)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_pump_not_object (__main__.Contracts.test_pump_not_object)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_raw_valid_not_bool (__main__.Contracts.test_raw_valid_not_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_schema_bool (__main__.Contracts.test_schema_bool)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_soil_missing_calibration_id (__main__.Contracts.test_soil_missing_calibration_id)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_soil_missing_raw (__main__.Contracts.test_soil_missing_raw)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_soil_missing_raw_valid (__main__.Contracts.test_soil_missing_raw_valid)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_string_raw (__main__.Contracts.test_string_raw)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_unknown_profile (__main__.Contracts.test_unknown_profile)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_zero_interval (__main__.Contracts.test_zero_interval)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 36, in test
+    with self.assertRaises(ValueError,msg='Malformed packet accepted'):validate_telemetry(p)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ValueError not raised : Malformed packet accepted
+
+======================================================================
+FAIL: test_fractional_raw_not_truncated (__main__.Logger.test_fractional_raw_not_truncated)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 179, in test_fractional_raw_not_truncated
+    self.assertFalse(rows[0]['soil_raw_valid'])
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_soil_disconnected_row_preserved (__main__.Logger.test_soil_disconnected_row_preserved)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/04f73192e7b3/PlantCare/evidence/baseline_rerun/test_spec_audit.py", line 175, in test_soil_disconnected_row_preserved
+    self.assertEqual(len(rows),1,'Actual firmware soil failure label causes entire sample to vanish')
+AssertionError: 0 != 1 : Actual firmware soil failure label causes entire sample to vanish
+
+----------------------------------------------------------------------
+Ran 80 tests in 0.058s
+
+FAILED (failures=45)

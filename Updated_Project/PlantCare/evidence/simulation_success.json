@@ -1,0 +1,122 @@
+[
+  {
+    "second": 0,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 2,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 4,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 6,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 8,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 10,
+    "state": "watering",
+    "stage": "RUNNING",
+    "fault": null
+  },
+  {
+    "second": 12,
+    "state": "checking_moisture",
+    "stage": "OBSERVING",
+    "fault": null
+  },
+  {
+    "second": 14,
+    "state": "checking_moisture",
+    "stage": "OBSERVING",
+    "fault": null
+  },
+  {
+    "second": 16,
+    "state": "checking_moisture",
+    "stage": "OBSERVING",
+    "fault": null
+  },
+  {
+    "second": 18,
+    "state": "thirsty",
+    "stage": "COOLDOWN",
+    "fault": null
+  },
+  {
+    "second": 20,
+    "state": "thirsty",
+    "stage": "COOLDOWN",
+    "fault": null
+  },
+  {
+    "second": 22,
+    "state": "happy",
+    "stage": "COOLDOWN",
+    "fault": null
+  },
+  {
+    "second": 24,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 26,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 28,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 30,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 32,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 34,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 36,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 38,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  }
+]

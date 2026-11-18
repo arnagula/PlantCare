@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  IoTDataEndpoint:
+    Type: String
+    Description: IoT Data-ATS hostname without a scheme
+Resources:
+  SampleHistory:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: device
+          AttributeType: S
+        - AttributeName: sample
+          AttributeType: S
+      KeySchema:
+        - AttributeName: device
+          KeyType: HASH
+        - AttributeName: sample
+          KeyType: RANGE
+  LiveAnalysis:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: aws.handler.lambda_handler
+      Runtime: python3.12
+      Timeout: 15
+      Environment:
+        Variables:
+          DRY_RUN: 'false'
+          EXPECTED_MODE: live
+          HISTORY_TABLE: !Ref SampleHistory
+          IOT_DATA_ENDPOINT: !Ref IoTDataEndpoint
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:PutItem
+              Resource: !GetAtt SampleHistory.Arn
+            - Effect: Allow
+              Action: iot:Publish
+              Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition
+      Events:
+        Telemetry:
+          Type: IoTRule
+          Properties:
+            Sql: SELECT * FROM 'plantcare/team3/pothos1/telemetry'
+            AwsIotSqlVersion: '2016-03-23'
+  SimulationAnalysis:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: aws.handler.lambda_handler
+      Runtime: python3.12
+      Timeout: 15
+      MemorySize: 512
+      Environment:
+        Variables:
+          DRY_RUN: 'false'
+          ENABLE_SYNTHETIC_MODEL: 'true'
+          EXPECTED_MODE: simulated
+          HISTORY_TABLE: !Ref SampleHistory
+          IOT_DATA_ENDPOINT: !Ref IoTDataEndpoint
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:PutItem
+              Resource: !GetAtt SampleHistory.Arn
+            - Effect: Allow
+              Action: iot:Publish
+              Resource: !Sub arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/condition
+      Events:
+        Telemetry:
+          Type: IoTRule
+          Properties:
+            Sql: SELECT * FROM 'plantcare/team3/sim/pothos1/telemetry'
+            AwsIotSqlVersion: '2016-03-23'

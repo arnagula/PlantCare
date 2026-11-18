@@ -1,0 +1,14 @@
+test_dry_run_cannot_water (test_analysis.Tests.test_dry_run_cannot_water) ... ok
+test_invalid_value_not_zero (test_analysis.Tests.test_invalid_value_not_zero) ... ok
+test_sim_identity_rejection (test_analysis.Tests.test_sim_identity_rejection) ... ok
+test_too_hot (test_analysis.Tests.test_too_hot) ... ok
+test_uncalibrated_is_unknown (test_analysis.Tests.test_uncalibrated_is_unknown) ... ok
+test_valid_packet (test_analysis.Tests.test_valid_packet) ... ok
+test_capture_keeps_invalid_reading_blank (test_capture_and_model.CaptureAndModelTests.test_capture_keeps_invalid_reading_blank) ... ok
+test_lambda_path_runs_saved_model_in_simulation (test_capture_and_model.CaptureAndModelTests.test_lambda_path_runs_saved_model_in_simulation) ... ok
+test_uncalibrated_live_telemetry_reaches_history_and_condition (test_cloud_handler.CloudHandlerTests.test_uncalibrated_live_telemetry_reaches_history_and_condition) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.953s
+
+OK

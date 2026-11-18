@@ -1,0 +1,122 @@
+[
+  {
+    "second": 0,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 2,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 4,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 6,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 8,
+    "state": "happy",
+    "stage": "READY",
+    "fault": null
+  },
+  {
+    "second": 10,
+    "state": "watering",
+    "stage": "RUNNING",
+    "fault": null
+  },
+  {
+    "second": 12,
+    "state": "checking_moisture",
+    "stage": "OBSERVING",
+    "fault": null
+  },
+  {
+    "second": 14,
+    "state": "checking_moisture",
+    "stage": "OBSERVING",
+    "fault": null
+  },
+  {
+    "second": 16,
+    "state": "checking_moisture",
+    "stage": "OBSERVING",
+    "fault": null
+  },
+  {
+    "second": 18,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 20,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 22,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 24,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 26,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 28,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 30,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 32,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 34,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 36,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  },
+  {
+    "second": 38,
+    "state": "watering_fault",
+    "stage": "FAULT",
+    "fault": "insufficient_rise"
+  }
+]

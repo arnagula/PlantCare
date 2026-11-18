@@ -1,0 +1,5 @@
+-r requirements.txt
+cfn-lint==1.60.0
+platformio==6.1.18
+paho-mqtt==2.1.0
+pyserial==3.5

@@ -1,0 +1,5 @@
+cfn-lint 1.60.0
+Command: cfn-lint PlantCare_Team3_Starter/template.yaml
+Exit: 0
+Diagnostics: none
+No SAM build/deploy was performed.

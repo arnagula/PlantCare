@@ -1,0 +1,72 @@
+{
+  "mode": "live",
+  "profile_revision": "v2-unqualified",
+  "plant": "Epipremnum aureum",
+  "timezone": "America/New_York",
+  "night": {
+    "start": "20:00",
+    "end": "08:00"
+  },
+  "thresholds": {
+    "light_enter_lux": 1100,
+    "light_exit_lux": 1300,
+    "cold_enter_c": 16,
+    "cold_exit_c": 17,
+    "hot_enter_c": 27,
+    "hot_exit_c": 26,
+    "humidity_enter_pct": 50,
+    "humidity_exit_pct": 55
+  },
+  "soil": {
+    "calibration_id": null,
+    "raw_dry": null,
+    "raw_wet": null,
+    "dry_enter_pct": null,
+    "dry_exit_pct": null,
+    "wet_exit_pct": null,
+    "wet_enter_pct": null,
+    "noise_pct": null,
+    "raw_noise": null,
+    "dry_samples": null,
+    "wet_samples": null,
+    "evidence_approved": false
+  },
+  "watering": {
+    "config_id": null,
+    "dose_ms": null,
+    "hard_max_ms": null,
+    "normal_cooldown_s": null,
+    "normal_response_wait_s": null,
+    "demo_cooldown_s": null,
+    "demo_response_wait_s": null,
+    "min_rise_pct": null,
+    "qualified": false,
+    "evidence_approved": false
+  },
+  "timing": {
+    "normal": {
+      "sample_s": 60,
+      "fast_sample_s": 2,
+      "stale_s": 180,
+      "fast_stale_s": 10,
+      "clear_s": 60,
+      "dry_s": 300,
+      "wet_s": 3600,
+      "light_s": 1800,
+      "temperature_s": 300,
+      "humidity_s": 1800
+    },
+    "demo": {
+      "sample_s": 2,
+      "fast_sample_s": 2,
+      "stale_s": 10,
+      "fast_stale_s": 10,
+      "clear_s": 5,
+      "dry_s": 10,
+      "wet_s": 10,
+      "light_s": 10,
+      "temperature_s": 10,
+      "humidity_s": 10
+    }
+  }
+}

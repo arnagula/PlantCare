@@ -1,0 +1,1 @@
+Safety core assertion suite passed

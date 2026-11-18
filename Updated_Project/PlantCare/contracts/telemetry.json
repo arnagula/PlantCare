@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "mode": "live",
+  "profile": "normal",
+  "device_id": "sensor-01",
+  "boot_id": "boot-a81f",
+  "seq": 42,
+  "ts": "2026-11-16T14:00:00.000Z",
+  "uptime_ms": 125000,
+  "sample_interval_s": 60,
+  "config_id": "cfg-unqualified",
+  "temperature_c": {
+    "value": 23.2,
+    "valid": true
+  },
+  "humidity_pct": {
+    "value": 54.0,
+    "valid": true
+  },
+  "light_lux": {
+    "value": 1500,
+    "valid": true
+  },
+  "soil": {
+    "raw": 360,
+    "raw_valid": true,
+    "pct": null,
+    "valid": false,
+    "calibrated": false,
+    "calibration_id": null
+  },
+  "pump": {
+    "on": false,
+    "armed": false,
+    "fault": null,
+    "active_command_id": null,
+    "cooldown_remaining_s": 0
+  }
+}

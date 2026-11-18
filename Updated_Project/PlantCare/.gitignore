@@ -1,0 +1,9 @@
+.venv/
+.pio/
+node_modules/
+__pycache__/
+*.pyc
+secrets.h
+*.key
+*.pem
+.aws-sam/

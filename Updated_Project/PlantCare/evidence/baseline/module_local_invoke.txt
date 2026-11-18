@@ -1,0 +1,36 @@
+$ /opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python -m aws.local_invoke
+{
+  "dry_run": true,
+  "report": {
+    "schema": 1,
+    "mode": "live",
+    "profile": "normal",
+    "ts": "2026-11-12T04:51:38.977Z",
+    "report_seq": 42,
+    "backend_boot_id": "lambda-prototype",
+    "profile_revision": "v1",
+    "sample_ts": "2026-11-16T14:00:00.000Z",
+    "source": {
+      "device_id": "sensor-01",
+      "boot_id": "boot-a81f",
+      "seq": 42
+    },
+    "freshness_timeout_s": 180,
+    "data_status": "uncalibrated",
+    "invalid_fields": [],
+    "state": "unknown",
+    "mood": "regular",
+    "issues": [],
+    "reason": "Soil calibration or sensor validity pending",
+    "details": [],
+    "watering": {
+      "stage": "DISARMED",
+      "pump_on": false,
+      "command_id": null,
+      "cooldown_remaining_s": 0,
+      "fault": null
+    }
+  }
+}
+
+EXIT 0

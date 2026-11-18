@@ -1,0 +1,1028 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Parameters": {
+    "IoTDataEndpoint": {
+      "Type": "String"
+    },
+    "JwtIssuer": {
+      "Type": "String"
+    },
+    "JwtAudience": {
+      "Type": "String"
+    },
+    "BackendGeneration": {
+      "Type": "String",
+      "Default": "deployment-1"
+    }
+  },
+  "Resources": {
+    "History": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "BillingMode": "PAY_PER_REQUEST",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "pk",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "sk",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "pk",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "sk",
+            "KeyType": "RANGE"
+          }
+        ],
+        "PointInTimeRecoverySpecification": {
+          "PointInTimeRecoveryEnabled": true
+        }
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain"
+    },
+    "LiveDLQ": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "FifoQueue": true,
+        "MessageRetentionPeriod": 1209600
+      }
+    },
+    "LiveQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "FifoQueue": true,
+        "VisibilityTimeout": 180,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "LiveDLQ",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount": 5
+        }
+      }
+    },
+    "LiveDeadLetterAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/SQS",
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Dimensions": [
+          {
+            "Name": "QueueName",
+            "Value": {
+              "Fn::GetAtt": [
+                "LiveDLQ",
+                "QueueName"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Maximum",
+        "Period": 60,
+        "EvaluationPeriods": 1,
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching"
+      }
+    },
+    "LiveWorker": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.handler.worker",
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "EXPECTED_MODE": "live",
+            "HISTORY_TABLE": {
+              "Ref": "History"
+            },
+            "IOT_DATA_ENDPOINT": {
+              "Ref": "IoTDataEndpoint"
+            },
+            "BACKEND_GENERATION": {
+              "Ref": "BackendGeneration"
+            },
+            "LIVE_QUEUE": {
+              "Ref": "LiveQueue"
+            },
+            "SIM_QUEUE": {
+              "Ref": "SimQueue"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem"
+                ],
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "History",
+                    "Arn"
+                  ]
+                },
+                "Condition": {
+                  "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                      "live"
+                    ]
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "iot:Publish",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/watering/command"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/control/command"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Queue": {
+            "Type": "SQS",
+            "Properties": {
+              "Queue": {
+                "Fn::GetAtt": [
+                  "LiveQueue",
+                  "Arn"
+                ]
+              },
+              "BatchSize": 1
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    },
+    "LiveIngress": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.handler.ingress",
+        "Timeout": 15,
+        "Environment": {
+          "Variables": {
+            "EXPECTED_MODE": "live",
+            "HISTORY_TABLE": {
+              "Ref": "History"
+            },
+            "IOT_DATA_ENDPOINT": {
+              "Ref": "IoTDataEndpoint"
+            },
+            "BACKEND_GENERATION": {
+              "Ref": "BackendGeneration"
+            },
+            "LIVE_QUEUE": {
+              "Ref": "LiveQueue"
+            },
+            "SIM_QUEUE": {
+              "Ref": "SimQueue"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "sqs:SendMessage",
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "LiveQueue",
+                    "Arn"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Topic0": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/telemetry'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic1": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/watering/event'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic2": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/control/event'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic3": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/status/sensor'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic4": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/status/display'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    },
+    "LiveSensorPolicy": {
+      "Type": "AWS::IoT::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "iot:Connect",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/team3-sensor"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Publish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/sensor"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/telemetry"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/watering/event"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/control/event"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Subscribe",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/pothos1/watering/command"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/pothos1/control/command"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Receive",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/watering/command"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/control/command"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "LiveDisplayPolicy": {
+      "Type": "AWS::IoT::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "iot:Connect",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/team3-display"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Publish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/display"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Subscribe",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/pothos1/condition"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/pothos1/status/backend"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Receive",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "SimDLQ": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "FifoQueue": true,
+        "MessageRetentionPeriod": 1209600
+      }
+    },
+    "SimQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "FifoQueue": true,
+        "VisibilityTimeout": 180,
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "SimDLQ",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount": 5
+        }
+      }
+    },
+    "SimDeadLetterAlarm": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "Namespace": "AWS/SQS",
+        "MetricName": "ApproximateNumberOfMessagesVisible",
+        "Dimensions": [
+          {
+            "Name": "QueueName",
+            "Value": {
+              "Fn::GetAtt": [
+                "SimDLQ",
+                "QueueName"
+              ]
+            }
+          }
+        ],
+        "Statistic": "Maximum",
+        "Period": 60,
+        "EvaluationPeriods": 1,
+        "Threshold": 0,
+        "ComparisonOperator": "GreaterThanThreshold",
+        "TreatMissingData": "notBreaching"
+      }
+    },
+    "SimWorker": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.handler.worker",
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "EXPECTED_MODE": "simulated",
+            "HISTORY_TABLE": {
+              "Ref": "History"
+            },
+            "IOT_DATA_ENDPOINT": {
+              "Ref": "IoTDataEndpoint"
+            },
+            "BACKEND_GENERATION": {
+              "Ref": "BackendGeneration"
+            },
+            "LIVE_QUEUE": {
+              "Ref": "LiveQueue"
+            },
+            "SIM_QUEUE": {
+              "Ref": "SimQueue"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem"
+                ],
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "History",
+                    "Arn"
+                  ]
+                },
+                "Condition": {
+                  "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                      "simulated"
+                    ]
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "iot:Publish",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/condition"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/watering/command"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/control/command"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/backend"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Queue": {
+            "Type": "SQS",
+            "Properties": {
+              "Queue": {
+                "Fn::GetAtt": [
+                  "SimQueue",
+                  "Arn"
+                ]
+              },
+              "BatchSize": 1
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    },
+    "SimIngress": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.handler.ingress",
+        "Timeout": 15,
+        "Environment": {
+          "Variables": {
+            "EXPECTED_MODE": "simulated",
+            "HISTORY_TABLE": {
+              "Ref": "History"
+            },
+            "IOT_DATA_ENDPOINT": {
+              "Ref": "IoTDataEndpoint"
+            },
+            "BACKEND_GENERATION": {
+              "Ref": "BackendGeneration"
+            },
+            "LIVE_QUEUE": {
+              "Ref": "LiveQueue"
+            },
+            "SIM_QUEUE": {
+              "Ref": "SimQueue"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "sqs:SendMessage",
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "SimQueue",
+                    "Arn"
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Topic0": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/sim/pothos1/telemetry'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic1": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/sim/pothos1/watering/event'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic2": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/sim/pothos1/control/event'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic3": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/sim/pothos1/status/sensor'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          },
+          "Topic4": {
+            "Type": "IoTRule",
+            "Properties": {
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/sim/pothos1/status/display'",
+              "AwsIotSqlVersion": "2016-03-23"
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    },
+    "SimSensorPolicy": {
+      "Type": "AWS::IoT::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "iot:Connect",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/team3-sim-sensor"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Publish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/sensor"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/telemetry"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/watering/event"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/control/event"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Subscribe",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/sim/pothos1/watering/command"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/sim/pothos1/control/command"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Receive",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/watering/command"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/control/command"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "SimDisplayPolicy": {
+      "Type": "AWS::IoT::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "iot:Connect",
+              "Resource": {
+                "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/team3-sim-display"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Publish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/display"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Subscribe",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/sim/pothos1/condition"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/sim/pothos1/status/backend"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:Receive",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/condition"
+                },
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/backend"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "Heartbeat": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.handler.heartbeat",
+        "Timeout": 65,
+        "Environment": {
+          "Variables": {
+            "LIVE_QUEUE": {
+              "Ref": "LiveQueue"
+            },
+            "SIM_QUEUE": {
+              "Ref": "SimQueue"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "sqs:SendMessage",
+                "Resource": [
+                  {
+                    "Fn::GetAtt": [
+                      "LiveQueue",
+                      "Arn"
+                    ]
+                  },
+                  {
+                    "Fn::GetAtt": [
+                      "SimQueue",
+                      "Arn"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Pulse": {
+            "Type": "Schedule",
+            "Properties": {
+              "Schedule": "rate(1 minute)"
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    },
+    "HttpApi": {
+      "Type": "AWS::Serverless::HttpApi",
+      "Properties": {
+        "Auth": {
+          "DefaultAuthorizer": "Jwt",
+          "Authorizers": {
+            "Jwt": {
+              "IdentitySource": "$request.header.Authorization",
+              "JwtConfiguration": {
+                "issuer": {
+                  "Ref": "JwtIssuer"
+                },
+                "audience": [
+                  {
+                    "Ref": "JwtAudience"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "Api": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.api.handler",
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "HISTORY_TABLE": {
+              "Ref": "History"
+            },
+            "IOT_DATA_ENDPOINT": {
+              "Ref": "IoTDataEndpoint"
+            },
+            "BACKEND_GENERATION": {
+              "Ref": "BackendGeneration"
+            },
+            "LIVE_QUEUE": {
+              "Ref": "LiveQueue"
+            },
+            "SIM_QUEUE": {
+              "Ref": "SimQueue"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:Query",
+                  "dynamodb:PutItem"
+                ],
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "History",
+                    "Arn"
+                  ]
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "sqs:SendMessage",
+                "Resource": [
+                  {
+                    "Fn::GetAtt": [
+                      "LiveQueue",
+                      "Arn"
+                    ]
+                  },
+                  {
+                    "Fn::GetAtt": [
+                      "SimQueue",
+                      "Arn"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Route0": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
+            }
+          },
+          "Route1": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/app.js",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
+            }
+          },
+          "Route2": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/style.css",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
+            }
+          },
+          "Route3": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/state",
+              "Method": "GET"
+            }
+          },
+          "Route4": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/history",
+              "Method": "GET"
+            }
+          },
+          "Route5": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/watering",
+              "Method": "GET"
+            }
+          },
+          "Route6": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/request",
+              "Method": "GET"
+            }
+          },
+          "Route7": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/watering",
+              "Method": "POST"
+            }
+          },
+          "Route8": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/watering/arm",
+              "Method": "POST"
+            }
+          },
+          "Route9": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/watering/disarm",
+              "Method": "POST"
+            }
+          },
+          "Route10": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/watering/reset",
+              "Method": "POST"
+            }
+          },
+          "Route11": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/water",
+              "Method": "POST"
+            }
+          },
+          "Route12": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/arm",
+              "Method": "POST"
+            }
+          },
+          "Route13": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/disarm",
+              "Method": "POST"
+            }
+          },
+          "Route14": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/reset_fault",
+              "Method": "POST"
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    }
+  },
+  "Outputs": {
+    "Dashboard": {
+      "Value": {
+        "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/"
+      }
+    }
+  }
+}

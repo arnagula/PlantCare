@@ -1,0 +1,76 @@
+{
+  "schema": 1,
+  "mode": "simulated",
+  "profile": "demo",
+  "ts": "2026-11-12T17:03:32.421Z",
+  "report_seq": 2,
+  "backend_boot_id": "bdd68065-b601-4bee-a0a1-ea1143f888da",
+  "profile_revision": "v2-simulation-fixture",
+  "sample_ts": "2026-11-12T17:03:32.421Z",
+  "source": {
+    "device_id": "sim-sensor-01",
+    "boot_id": "sim-boot",
+    "seq": 1
+  },
+  "freshness_timeout_s": 10,
+  "watering": {
+    "stage": "DISARMED",
+    "fault": null,
+    "pump_on": false,
+    "command_id": null,
+    "cooldown_remaining_s": 0
+  },
+  "data_status": "ok",
+  "invalid_fields": [],
+  "state": "happy",
+  "mood": "happy",
+  "issues": [],
+  "details": [],
+  "reason": "No active issues",
+  "values": {
+    "schema": 1,
+    "mode": "simulated",
+    "profile": "demo",
+    "device_id": "sim-sensor-01",
+    "boot_id": "sim-boot",
+    "seq": 1,
+    "ts": "2026-11-12T17:03:32.421Z",
+    "uptime_ms": 2000,
+    "sample_interval_s": 2,
+    "config_id": "sim-config",
+    "temperature_c": {
+      "value": 23,
+      "valid": true
+    },
+    "humidity_pct": {
+      "value": 60,
+      "valid": true
+    },
+    "light_lux": {
+      "value": 1500,
+      "valid": true
+    },
+    "soil": {
+      "raw": 500,
+      "raw_valid": true,
+      "pct": 50,
+      "valid": true,
+      "calibrated": true,
+      "calibration_id": "sim-soil"
+    },
+    "pump": {
+      "on": false,
+      "armed": false,
+      "fault": null,
+      "active_command_id": null,
+      "cooldown_remaining_s": 0
+    }
+  },
+  "connections": {},
+  "availability": {
+    "water": "not_armed",
+    "arm": null,
+    "disarm": null,
+    "reset_fault": null
+  }
+}
