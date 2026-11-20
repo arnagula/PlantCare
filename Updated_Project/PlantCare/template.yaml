@@ -1044,7 +1044,7 @@
         "CodeUri": ".",
         "Runtime": "python3.12",
         "Handler": "aws.demo.handler",
-        "Timeout": 5,
+        "Timeout": 15,
         "Environment": {
           "Variables": {
             "HISTORY_TABLE": {
