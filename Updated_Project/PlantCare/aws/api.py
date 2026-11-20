@@ -1,20 +1,13 @@
 """Authenticated HTTP API; requests enter the same FIFO as device events."""
 import json
 import uuid
-from pathlib import Path
 import time
 from .handler import service,enqueue
+from .http import response
 from plantcare.contracts import require,timestamp,utc,Rejected
-
-ROOT=Path(__file__).resolve().parents[1]/'dashboard'
-def response(code,body,content_type='application/json'):
-    return dict(statusCode=code,headers={'content-type':content_type,'cache-control':'no-store','content-security-policy':"default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'",'x-content-type-options':'nosniff'},body=json.dumps(body,allow_nan=False) if content_type=='application/json' else body)
 
 def handler(event,context):
     path=event.get('rawPath','/'); method=event.get('requestContext',{}).get('http',{}).get('method','GET')
-    if method=='GET' and path in ('/','/app.js','/style.css'):
-        name={'/':'index.html','/app.js':'app.js','/style.css':'style.css'}[path]
-        return response(200,(ROOT/name).read_text(),{'/':'text/html','/app.js':'text/javascript','/style.css':'text/css'}[path])
     claims=event.get('requestContext',{}).get('authorizer',{}).get('jwt',{}).get('claims',{})
     if not claims.get('sub'):return response(401,{'error':'unauthorized'})
     try:

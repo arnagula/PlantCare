@@ -1,18 +1,85 @@
 'use strict';
-const $=id=>document.getElementById(id);
-let token='',latest=null,busy=false,received=0,requestId=null,pendingAction=null,polling=false;
-const actionPath=a=>({water:'/api/watering',arm:'/api/watering/arm',disarm:'/api/watering/disarm',reset_fault:'/api/watering/reset'}[a]);
-const buttons=[...document.querySelectorAll('[data-action]')];
-async function api(path,options={}){const r=await fetch(path+(path.includes('?')?'&':'?')+'mode='+$('mode').value,{...options,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'}});const p=await r.json();if(!r.ok){const error=Error(p.error||'Request failed');error.status=r.status;throw error;}return p;}
-function unknown(message){$('state').textContent='Unknown';$('reason').textContent=message;buttons.forEach(b=>b.disabled=true);}
-function render(p){latest=p;received=performance.now();$('modeBanner').textContent=($('mode').value==='simulated'?'SIMULATION':'LIVE')+' · '+p.data_status;$('state').textContent=p.state+' · '+p.mood;$('reason').textContent=p.reason;$('sample').textContent='Source sample: '+(p.sample_ts||'none');$('metrics').replaceChildren();const s=p.values;for(const [key,label,unit] of [['temperature_c','Temperature','C'],['humidity_pct','Humidity','%RH'],['light_lux','Light','lux'],['soil_raw','Soil raw',''],['soil_pct','Soil moisture','%']]){let v=null,valid=false;if(s){if(key.startsWith('soil_')){v=s.soil[key==='soil_raw'?'raw':'pct'];valid=s.soil[key==='soil_raw'?'raw_valid':'valid'];}else{v=s[key].value;valid=s[key].valid;}}const el=document.createElement('p');el.textContent=label+': '+(valid?v+' '+unit:'invalid / unavailable');$('metrics').append(el);}$('issues').replaceChildren();for(const d of p.details){const el=document.createElement('li');el.textContent=d.code+': '+d.value+' '+d.unit+' (threshold '+d.threshold+'). '+d.recommendation;$('issues').append(el);}$('watering').textContent=p.watering.stage+' · pump '+(p.watering.pump_on?'ON':'OFF')+' · cooldown '+Math.ceil(p.watering.cooldown_remaining_s)+' s'+(p.watering.fault?' · '+p.watering.fault:'');for(const b of buttons){const reason=p.availability[b.dataset.action];b.disabled=busy||!!reason;b.title=reason||'Available';}watchdog();}
-function watchdog(){if(!latest)return;const age=(Date.now()-Date.parse(latest.sample_ts))/1000;if(!Number.isFinite(age)||age>latest.freshness_timeout_s||age< -5||(performance.now()-received)/1000>latest.freshness_timeout_s)unknown('No fresh measurements; controls disabled');}
-async function poll(){if(!token||polling)return;polling=true;try{render(await api('/api/state'));$('connection').textContent='Connected · polling every 2 seconds';if(requestId){const r=await api('/api/request?request_id='+encodeURIComponent(requestId));$('request').textContent=r.status+(r.reason?': '+r.reason:'');if(r.status!=='pending'){requestId=null;pendingAction=null;busy=false;$('retry').hidden=true;}}}catch(e){unknown('Connection unavailable');$('connection').textContent=e.message;}finally{polling=false;}}
-$('connect').onclick=()=>{token=$('token').value.trim();$('token').value='';poll();};$('mode').onchange=()=>{latest=null;requestId=null;busy=false;unknown('Switching environment');poll();};
-for(const b of buttons)b.onclick=async()=>{if(busy)return;const action=b.dataset.action;const wording=action==='reset_fault'?'Confirm the pump, tubing, reservoir and soil have been physically inspected. Reset leaves watering DISARMED.':action==='water'?'Request one calibrated watering dose?':'Confirm '+action+' watering?';if(!confirm(wording))return;busy=true;buttons.forEach(x=>x.disabled=true);requestId=crypto.randomUUID();pendingAction=action;try{await api(actionPath(action),{method:'POST',body:JSON.stringify({request_id:requestId,...(action==='reset_fault'?{inspected:true}:{})})});$('request').textContent='Queued; waiting for coordinator and device acknowledgement';}catch(e){$('request').textContent=e.message;if(e.status===400||e.status===409){requestId=null;pendingAction=null;busy=false;}else{$('retry').hidden=false;$('request').textContent+='; check status or retry the same request';}}await poll();};
-async function pages(path){const rows=[];let cursor=null;do{const p=await api(path+(cursor?'&cursor='+encodeURIComponent(cursor):''));rows.push(...p.rows);cursor=p.cursor;if(rows.length>=400000)break;}while(cursor);return rows.slice(0,400000);}
-$('history').onclick=async()=>{try{const end=new Date(),start=new Date(end.getTime()-Number($('window').value)*1000),range='start='+start.toISOString()+'&end='+end.toISOString();const rows=await pages('/api/history?metric='+$('metric').value+'&'+range);const events=await pages('/api/watering?'+range);draw(rows,events,start.getTime(),end.getTime());$('historyStatus').textContent=rows.length+' stored readings; blank segments are gaps or invalid readings';$('events').replaceChildren();for(const event of events){const li=document.createElement('li');li.textContent=event.ts+' · '+event.action+' · '+event.status+(event.reason_code?' · '+event.reason_code:'');$('events').append(li);}}catch(e){$('historyStatus').textContent=e.message;}};
-function draw(rows,events,start,end){const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);const values=rows.filter(r=>r.valid&&Number.isFinite(r.value)).map(r=>r.value);if(!values.length)return;let lo=Infinity,hi=-Infinity;for(const v of values){lo=Math.min(lo,v);hi=Math.max(hi,v);}const x=t=>20+(Date.parse(t)-start)/(end-start)*(w-40),y=v=>h-25-(v-lo)/Math.max(1,hi-lo)*(h-50);ctx.strokeStyle='#216a49';ctx.beginPath();let previous=null;for(const r of rows){const t=Date.parse(r.ts);if(!r.valid||r.value===null){previous=null;continue;}const maxGap=1.5*(r.sample_interval_s||60)*1000;if(previous!==null&&t-previous<=maxGap)ctx.lineTo(x(r.ts),y(r.value));else ctx.moveTo(x(r.ts),y(r.value));previous=t;}ctx.stroke();ctx.fillStyle='#17372c';ctx.fillText(hi.toFixed(1),2,15);ctx.fillText(lo.toFixed(1),2,h-5);ctx.strokeStyle='#b66a27';for(const e of events){if(e.status==='started'){ctx.beginPath();ctx.moveTo(x(e.ts),15);ctx.lineTo(x(e.ts),h-15);ctx.stroke();}}}
-setInterval(poll,2000);setInterval(watchdog,500);
 
-$('retry').onclick=async()=>{if(!requestId||!pendingAction)return;try{await api(actionPath(pendingAction),{method:'POST',body:JSON.stringify({request_id:requestId,...(pendingAction==='reset_fault'?{inspected:true}:{})})});$('retry').hidden=true;await poll();}catch(e){$('request').textContent=e.message;}};
+const byId = id => document.getElementById(id);
+const metrics = [
+  ['temperature_c', 'Temperature', '°C'],
+  ['humidity_pct', 'Humidity', '% RH'],
+  ['light_lux', 'Light', 'lux'],
+  ['soil_pct', 'Soil moisture', '%'],
+  ['soil_raw', 'Soil sensor', ''],
+];
+const conditions = new Map([
+  ['happy', 'Happy'],
+  ['thirsty', 'Thirsty'],
+  ['too_wet', 'Too wet'],
+  ['too_hot', 'Too hot'],
+  ['too_cold', 'Too cold'],
+  ['low_light', 'Low light'],
+  ['low_humidity', 'Low humidity'],
+]);
+const statuses = new Map([
+  ['ok', 'Receiving live measurements'],
+  ['invalid', 'Some measurements are unavailable'],
+  ['uncalibrated', 'Soil moisture calibration is pending'],
+]);
+let polling = false;
+let expiresAt = 0;
+
+function renderReadings(readings) {
+  const cards = metrics.map(([key, label, unit]) => {
+    const card = document.createElement('p');
+    const value = readings?.[key];
+    card.textContent = label + ': ' + (Number.isFinite(value) ? [value, unit].join(' ').trim() : 'Unavailable');
+    return card;
+  });
+  byId('metrics').replaceChildren(...cards);
+}
+
+function clearReadings(message) {
+  expiresAt = 0;
+  byId('state').textContent = 'Unknown';
+  byId('connection').textContent = message;
+  byId('sample').hidden = true;
+  renderReadings(null);
+}
+
+function expireReadings() {
+  if (expiresAt && performance.now() >= expiresAt) {
+    clearReadings('No fresh measurements');
+  }
+}
+
+async function poll() {
+  if (polling) return;
+  polling = true;
+  const startedAt = performance.now();
+  try {
+    const response = await fetch('/api/demo/telemetry', {
+      method: 'GET',
+      credentials: 'omit',
+      cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) throw new Error('Telemetry unavailable');
+    const telemetry = await response.json();
+    expiresAt = startedAt + telemetry.fresh_for_s * 1000;
+    if (!statuses.has(telemetry.status) || !Number.isFinite(expiresAt) || performance.now() >= expiresAt) {
+      clearReadings('No fresh measurements');
+      return;
+    }
+    byId('connection').textContent = statuses.get(telemetry.status);
+    byId('state').textContent = conditions.get(telemetry.condition) || 'Unknown';
+    byId('sample').textContent = 'Sample taken ' + new Date(telemetry.sample_time).toLocaleString();
+    byId('sample').hidden = false;
+    renderReadings(telemetry.readings);
+  } catch {
+    clearReadings('Telemetry connection unavailable');
+  } finally {
+    polling = false;
+  }
+}
+
+renderReadings(null);
+poll();
+setInterval(poll, 2000);
+setInterval(expireReadings, 500);

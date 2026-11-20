@@ -1,11 +1,62 @@
-const {JSDOM}=require('jsdom');const fs=require('fs');const assert=require('node:assert/strict');
-(async()=>{const dom=new JSDOM(fs.readFileSync('dashboard/index.html','utf8'),{url:'https://plant.test/',runScripts:'outside-only'});const w=dom.window;let calls=[],offline=false;const state={mode:'simulated',data_status:'ok',state:'happy',mood:'happy',reason:'No issues',sample_ts:new Date().toISOString(),freshness_timeout_s:10,details:[],values:{temperature_c:{value:23,valid:true},humidity_pct:{value:60,valid:true},light_lux:{value:1500,valid:true},soil:{raw:500,raw_valid:true,pct:50,valid:true}},watering:{stage:'READY',pump_on:false,cooldown_remaining_s:0,fault:null},availability:{water:'soil_not_dry',arm:null,disarm:null,reset_fault:null}};let draw=[];
-w.HTMLCanvasElement.prototype.getContext=()=>({clearRect(){},beginPath(){},moveTo(...a){draw.push(['move',...a])},lineTo(...a){draw.push(['line',...a])},stroke(){},fillText(){}});w.confirm=()=>true;w.setInterval=()=>1;w.fetch=async(url,opts)=>{calls.push({url,opts});if(offline)throw Error('offline');let body=state;if(url.includes('/api/watering/arm'))body={status:'queued'};if(url.includes('/api/request'))body={status:'pending'};return {ok:true,json:async()=>body};};w.eval(fs.readFileSync('dashboard/app.js','utf8')+'\nwindow.pollForTest=poll;window.drawForTest=draw;');let count=0;function test(f){f();count++;}
-test(()=>assert.equal(w.document.getElementById('state').textContent,'Unknown'));
-w.document.getElementById('mode').value='simulated';w.document.getElementById('token').value='token';w.document.getElementById('connect').click();await new Promise(r=>setImmediate(r));
-test(()=>assert.equal(w.document.getElementById('token').value,''));test(()=>assert.match(w.document.getElementById('modeBanner').textContent,/SIMULATION/));test(()=>assert.equal(w.document.querySelectorAll('#metrics p').length,5));test(()=>assert.equal(w.document.querySelector('[data-action=water]').disabled,true));
-state.reason='<img src=x onerror=alert(1)>';await w.pollForTest();test(()=>assert.equal(w.document.querySelectorAll('#reason img').length,0));
-const arm=w.document.querySelector('[data-action=arm]');arm.click();arm.click();await new Promise(r=>setImmediate(r));test(()=>assert.equal(calls.filter(c=>c.opts.method==='POST').length,1));
-w.eval(`drawForTest([{ts:'2026-11-12T15:00:00.000Z',value:1,valid:true,sample_interval_s:2},{ts:'2026-11-12T15:00:10.000Z',value:2,valid:true,sample_interval_s:2}],[],Date.parse('2026-11-12T15:00:00Z'),Date.parse('2026-11-12T15:01:00Z'))`);test(()=>assert.equal(draw.filter(x=>x[0]==='line').length,0));
-offline=true;await w.pollForTest();test(()=>assert.equal(w.document.getElementById('state').textContent,'Unknown'));test(()=>assert([...w.document.querySelectorAll('[data-action]')].every(x=>x.disabled)));
-console.log(count+' DOM behavior tests passed (jsdom; no rendered-browser acceptance)');dom.window.close();})().catch(e=>{console.error(e);process.exitCode=1});
+const { JSDOM } = require('jsdom');
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+
+async function testDashboard() {
+  const html = fs.readFileSync('dashboard/index.html', 'utf8');
+  const dom = new JSDOM(html, { url: 'https://plant.test/', runScripts: 'outside-only' });
+  const w = dom.window;
+  const calls = [];
+  const timers = new Map();
+  let now = 100;
+  let offline = false;
+  let snapshot = {
+    status: 'ok',
+    condition: 'thirsty',
+    sample_time: '2026-11-12T15:00:00.000Z',
+    fresh_for_s: 10,
+    readings: { temperature_c: 23, humidity_pct: 60, light_lux: 1500, soil_pct: null, soil_raw: 0 },
+  };
+  try {
+    w.AbortSignal = AbortSignal;
+    w.performance.now = () => now;
+    w.setInterval = (callback, delay) => timers.set(delay, callback);
+    w.fetch = async (url, options) => {
+      calls.push({ url, options });
+      if (offline) throw new Error('offline');
+      return { ok: true, json: async () => snapshot };
+    };
+    w.eval(fs.readFileSync('dashboard/app.js', 'utf8'));
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls.length, 1);
+    assert.equal(calls[0].url, '/api/demo/telemetry');
+    assert.equal(calls[0].options.method, 'GET');
+    assert.equal(calls[0].options.credentials, 'omit');
+    assert.equal(calls[0].options.headers, undefined);
+    assert.equal(w.document.querySelectorAll('input, button, select, form').length, 0);
+    assert.equal(w.document.getElementById('state').textContent, 'Thirsty');
+    assert.match(w.document.getElementById('metrics').textContent, /Soil sensor: 0/);
+    assert.match(w.document.getElementById('metrics').textContent, /Soil moisture: Unavailable/);
+    now += 10001;
+    timers.get(500)();
+    assert.equal(w.document.getElementById('state').textContent, 'Unknown');
+    assert.doesNotMatch(w.document.getElementById('metrics').textContent, /1500/);
+    await timers.get(2000)();
+    assert.equal(w.document.getElementById('state').textContent, 'Thirsty');
+    snapshot = { status: 'stale', readings: null };
+    await timers.get(2000)();
+    assert.equal(w.document.getElementById('connection').textContent, 'No fresh measurements');
+    offline = true;
+    await timers.get(2000)();
+    assert.equal(w.document.getElementById('connection').textContent, 'Telemetry connection unavailable');
+    assert.ok(calls.every(call => call.url === '/api/demo/telemetry' && call.options.method === 'GET'));
+    console.log('Dashboard DOM tests passed');
+  } finally {
+    w.close();
+  }
+}
+
+testDashboard().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});

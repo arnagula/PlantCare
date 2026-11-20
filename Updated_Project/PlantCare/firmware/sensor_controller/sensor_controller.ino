@@ -49,7 +49,7 @@ void enqueueEvent(const Event&e){
  if(e.reason.empty())j["reason_code"]=nullptr;else j["reason_code"]=e.reason;
  if(e.status=="started"){startedUtc=wall();j["started_at"]=stamp(startedUtc);j["baseline_soil_pct"]=e.baseline;fastUntil=mono()+settings::responseMs+10000;}
  if(e.status=="completed"||e.status=="aborted"){j["started_at"]=stamp(startedUtc);j["ended_at"]=stamp(startedUtc+e.duration);j["actual_duration_ms"]=e.duration;j["baseline_soil_pct"]=e.baseline;fastUntil=mono()+settings::responseMs+10000;}
- Message m{};snprintf(m.topic,sizeof(m.topic),"%s%s/event",prefix,e.action=="water"?"watering":"control");serializeJson(j,m.body,sizeof(m.body));m.created=mono();
+ static Message m{};snprintf(m.topic,sizeof(m.topic),"%s%s/event",prefix,e.action=="water"?"watering":"control");serializeJson(j,m.body,sizeof(m.body));m.created=mono();
  if(xQueueSend(events,&m,0)!=pdTRUE){safety->fault=true;safety->armed=false;Serial.println("EVENT_QUEUE_FULL: local lockout");}
 }
 void sample(){
@@ -58,7 +58,7 @@ void sample(){
  metric(j["temperature_c"].to<JsonObject>(),temp,-40,85);metric(j["humidity_pct"].to<JsonObject>(),rh,0,100);metric(j["light_lux"].to<JsonObject>(),lux,0,200000);
  auto s=j["soil"].to<JsonObject>();if(soilValid)s["raw"]=raw;else s["raw"]=nullptr;s["raw_valid"]=soilValid;s["calibrated"]=settings::calibrated;s["valid"]=isfinite(pct);if(isfinite(pct))s["pct"]=pct;else s["pct"]=nullptr;if(settings::calibrated)s["calibration_id"]=settings::calibrationId;else s["calibration_id"]=nullptr;
  auto p=j["pump"].to<JsonObject>();p["on"]=safety->on;p["armed"]=safety->armed;if(safety->fault)p["fault"]="local_fault";else p["fault"]=nullptr;p["active_command_id"]=safety->on?activeId:String();if(!safety->on)p["active_command_id"]=nullptr;p["cooldown_remaining_s"]=safety->cooldown(mono())/1000.0;
- Message m{};snprintf(m.topic,sizeof(m.topic),"%stelemetry",prefix);serializeJson(j,m.body,sizeof(m.body));m.created=mono();xQueueOverwrite(telemetryQueue,&m);
+ static Message m{};snprintf(m.topic,sizeof(m.topic),"%stelemetry",prefix);serializeJson(j,m.body,sizeof(m.body));m.created=mono();xQueueOverwrite(telemetryQueue,&m);
 }
 bool id(JsonVariantConst v){return v.is<const char*>()&&strlen(v.as<const char*>())>0&&strlen(v.as<const char*>())<=64;}
 void commandMessage(const Message&m){
@@ -86,7 +86,7 @@ void network(void*){
  }
 }
 void setup(){
- pinMode(RELAY,OUTPUT);digitalWrite(RELAY,LOW);Serial.begin(115200);bool nvsReady=preferences.begin("plantcare",false);
+ pinMode(RELAY,OUTPUT);digitalWrite(RELAY,LOW);Serial.begin(115200);delay(1500);Serial.println("PLANTCARE: SETUP STARTED");bool nvsReady=preferences.begin("plantcare",false);
  JsonDocument configuration;configuration["config_id"]=settings::config().id;configuration["calibrated"]=settings::calibrated;configuration["calibration_id"]=settings::calibrationId;configuration["raw_dry"]=settings::rawDry;configuration["raw_wet"]=settings::rawWet;String savedConfig;serializeJson(configuration,savedConfig);bool configSaved=nvsReady&&preferences.putString("configuration",savedConfig)==savedConfig.length();
  snprintf(bootId,sizeof(bootId),"boot-%08lx%08lx",(unsigned long)esp_random(),(unsigned long)esp_random());
  esp_timer_create_args_t args{};args.callback=timerOff;args.name="pump-cutoff";if(esp_timer_create(&args,&cutoff)!=ESP_OK){Serial.println("Timer initialization failed");while(true)delay(1000);}
@@ -96,8 +96,14 @@ void setup(){
  Wire.begin(5,6);Wire.setClock(100000);Wire.setTimeOut(50);xTaskCreate(network,"mqtt",16384,nullptr,1,nullptr);sample();lastSample=mono();
 }
 void loop(){
+ static uint32_t lastDebug = 0;
+ if (millis() - lastDebug >= 5000) {
+  lastDebug = millis();
+  Serial.printf("LOOP ALIVE: uptime=%lu ms, seq=%lu\n",
+                (unsigned long)millis(), (unsigned long)seq);
+ }
  uint64_t now=mono();if(Serial.available()&&Serial.readStringUntil('\n')=="SHUTDOWN"&&!safety->on){safety->armed=false;shutdownRequested=true;}
  if(safety->on){readSensors();bool didStop=stopped.exchange(false);portENTER_CRITICAL(&timerMux);uint64_t physical=stoppedAt;portEXIT_CRITICAL(&timerMux);enqueueEvent(safety->tick(now,isfinite(pct),didStop,physical));}
- Message m{};if(xQueueReceive(commands,&m,0)==pdTRUE)commandMessage(m);
+ static Message m{};if(xQueueReceive(commands,&m,0)==pdTRUE)commandMessage(m);
  uint64_t interval=(safety->on||now<fastUntil)?2000:settings::sampleMs;if(now-lastSample>=interval){lastSample=now;sample();}delay(10);
 }

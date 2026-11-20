@@ -162,6 +162,18 @@
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
                   }
                 ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": "iot:RetainPublish",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
+                  }
+                ]
               }
             ]
           }
@@ -303,6 +315,15 @@
             },
             {
               "Effect": "Allow",
+              "Action": "iot:RetainPublish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/sensor"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
               "Action": "iot:Subscribe",
               "Resource": [
                 {
@@ -345,6 +366,15 @@
             {
               "Effect": "Allow",
               "Action": "iot:Publish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/display"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:RetainPublish",
               "Resource": [
                 {
                   "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/display"
@@ -493,6 +523,18 @@
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/backend"
                   }
                 ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": "iot:RetainPublish",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/condition"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/backend"
+                  }
+                ]
               }
             ]
           }
@@ -634,6 +676,15 @@
             },
             {
               "Effect": "Allow",
+              "Action": "iot:RetainPublish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/sensor"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
               "Action": "iot:Subscribe",
               "Resource": [
                 {
@@ -676,6 +727,15 @@
             {
               "Effect": "Allow",
               "Action": "iot:Publish",
+              "Resource": [
+                {
+                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/display"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": "iot:RetainPublish",
               "Resource": [
                 {
                   "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/display"
@@ -852,45 +912,6 @@
           }
         ],
         "Events": {
-          "Route0": {
-            "Type": "HttpApi",
-            "Properties": {
-              "ApiId": {
-                "Ref": "HttpApi"
-              },
-              "Path": "/",
-              "Method": "GET",
-              "Auth": {
-                "Authorizer": "NONE"
-              }
-            }
-          },
-          "Route1": {
-            "Type": "HttpApi",
-            "Properties": {
-              "ApiId": {
-                "Ref": "HttpApi"
-              },
-              "Path": "/app.js",
-              "Method": "GET",
-              "Auth": {
-                "Authorizer": "NONE"
-              }
-            }
-          },
-          "Route2": {
-            "Type": "HttpApi",
-            "Properties": {
-              "ApiId": {
-                "Ref": "HttpApi"
-              },
-              "Path": "/style.css",
-              "Method": "GET",
-              "Auth": {
-                "Authorizer": "NONE"
-              }
-            }
-          },
           "Route3": {
             "Type": "HttpApi",
             "Properties": {
@@ -1009,6 +1030,105 @@
               },
               "Path": "/api/reset_fault",
               "Method": "POST"
+            }
+          }
+        }
+      },
+      "Metadata": {
+        "BuildMethod": "makefile"
+      }
+    },
+    "Demo": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "CodeUri": ".",
+        "Runtime": "python3.12",
+        "Handler": "aws.demo.handler",
+        "Timeout": 5,
+        "Environment": {
+          "Variables": {
+            "HISTORY_TABLE": {
+              "Ref": "History"
+            }
+          }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "dynamodb:GetItem",
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "History",
+                    "Arn"
+                  ]
+                },
+                "Condition": {
+                  "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                      "live"
+                    ]
+                  },
+                  "Null": {
+                    "dynamodb:LeadingKeys": "false"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "Events": {
+          "Home": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
+            }
+          },
+          "Script": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/app.js",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
+            }
+          },
+          "Styles": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/style.css",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
+            }
+          },
+          "Telemetry": {
+            "Type": "HttpApi",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "Path": "/api/demo/telemetry",
+              "Method": "GET",
+              "Auth": {
+                "Authorizer": "NONE"
+              }
             }
           }
         }

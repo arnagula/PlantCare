@@ -1,1 +1,21 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plant Care Companion</title><link rel="stylesheet" href="/style.css"></head><body><header><h1>Plant Care Companion</h1><span id="modeBanner">LIVE · unknown</span></header><main><section><label>Environment <select id="mode"><option value="live">Live plant</option><option value="simulated">Simulation</option></select></label><label>Access token <input type="password" id="token" autocomplete="off"></label><button id="connect">Connect</button><p id="connection" role="status">Disconnected. Sign in with your project's JWT access token.</p></section><section><h2 id="state">Unknown</h2><p id="reason">Waiting for fresh measurements</p><p id="sample"></p><div id="metrics"></div><ul id="issues"></ul></section><section><h2>Watering</h2><p id="watering">Disarmed</p><div id="controls"><button data-action="arm" disabled>Arm</button><button data-action="water" disabled>Water once</button><button data-action="disarm" disabled>Disarm</button><button data-action="reset_fault" disabled>Reset inspected fault</button></div><p id="request" role="status"></p><button id="retry" hidden>Retry same request</button></section><section><h2>History</h2><label>Window <select id="window"><option value="3600">1 hour</option><option value="86400">24 hours</option><option value="604800">7 days</option></select></label><label>Measurement <select id="metric"><option value="soil_pct">Soil moisture (%)</option><option value="soil_raw">Soil raw</option><option value="temperature_c">Temperature (C)</option><option value="humidity_pct">Humidity (%RH)</option><option value="light_lux">Light (lux)</option></select></label><button id="history">Load history</button><p id="historyStatus"></p><canvas id="chart" width="960" height="280" aria-label="Measurement history; gaps indicate missing or invalid data"></canvas><h3>Watering events</h3><ul id="events"></ul></section></main><script src="/app.js" defer></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Plant Care Companion</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header><h1>Plant Care Companion</h1><span id="modeBanner">Live plant</span></header>
+  <main>
+    <section aria-labelledby="state">
+      <p id="connection" role="status">Waiting for telemetry</p>
+      <h2 id="state">Unknown</h2>
+      <p id="sample" hidden></p>
+      <div id="metrics"></div>
+    </section>
+  </main>
+  <script src="/app.js" defer></script>
+</body>
+</html>

@@ -15,7 +15,7 @@ for mode,name in [('live','Live'),('simulated','Sim')]:
     prefix='plantcare/team3/'+('pothos1/' if mode=='live' else 'sim/pothos1/')
     variables={'EXPECTED_MODE':mode,'HISTORY_TABLE':ref('History'),'IOT_DATA_ENDPOINT':ref('IoTDataEndpoint'),'BACKEND_GENERATION':ref('BackendGeneration'),'LIVE_QUEUE':ref('LiveQueue'),'SIM_QUEUE':ref('SimQueue')}
     pub=[sub('arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/'+prefix+x) for x in ('condition','watering/command','control/command','status/backend')]
-    resource(name+'Worker','AWS::Serverless::Function',dict(CodeUri='.',Runtime='python3.12',Handler='aws.handler.worker',Timeout=30,Environment={'Variables':variables},Policies=[{'Statement':[statement(['dynamodb:GetItem','dynamodb:PutItem'],arn('History')),statement('iot:Publish',pub)]}],Events={'Queue':{'Type':'SQS','Properties':{'Queue':arn(name+'Queue'),'BatchSize':1}}}))
+    resource(name+'Worker','AWS::Serverless::Function',dict(CodeUri='.',Runtime='python3.12',Handler='aws.handler.worker',Timeout=30,Environment={'Variables':variables},Policies=[{'Statement':[statement(['dynamodb:GetItem','dynamodb:PutItem'],arn('History')),statement('iot:Publish',pub),statement('iot:RetainPublish',[pub[0],pub[3]])]}],Events={'Queue':{'Type':'SQS','Properties':{'Queue':arn(name+'Queue'),'BatchSize':1}}}))
     events={}
     for i,tail in enumerate(('telemetry','watering/event','control/event','status/sensor','status/display')):
         events['Topic'+str(i)]={'Type':'IoTRule','Properties':{'Sql':"SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM '"+prefix+tail+"'",'AwsIotSqlVersion':'2016-03-23'}}
@@ -25,15 +25,31 @@ for mode,name in [('live','Live'),('simulated','Sim')]:
         publishes=['status/'+role]+(['telemetry','watering/event','control/event'] if role=='sensor' else [])
         subscribes=['watering/command','control/command'] if role=='sensor' else ['condition','status/backend']
         topicarn=lambda kind,tail:sub('arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:'+kind+'/'+prefix+tail)
-        resource(name+role.title()+'Policy','AWS::IoT::Policy',{'PolicyDocument':{'Version':'2012-10-17','Statement':[statement('iot:Connect',sub('arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/'+clientid)),statement('iot:Publish',[topicarn('topic',x) for x in publishes]),statement('iot:Subscribe',[topicarn('topicfilter',x) for x in subscribes]),statement('iot:Receive',[topicarn('topic',x) for x in subscribes])]}})
+        resource(name+role.title()+'Policy','AWS::IoT::Policy',{'PolicyDocument':{'Version':'2012-10-17','Statement':[statement('iot:Connect',sub('arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:client/'+clientid)),statement('iot:Publish',[topicarn('topic',x) for x in publishes]),statement('iot:RetainPublish',[topicarn('topic','status/'+role)]),statement('iot:Subscribe',[topicarn('topicfilter',x) for x in subscribes]),statement('iot:Receive',[topicarn('topic',x) for x in subscribes])]}})
 resource('Heartbeat','AWS::Serverless::Function',dict(CodeUri='.',Runtime='python3.12',Handler='aws.handler.heartbeat',Timeout=65,Environment={'Variables':{'LIVE_QUEUE':ref('LiveQueue'),'SIM_QUEUE':ref('SimQueue')}},Policies=[{'Statement':[statement('sqs:SendMessage',[arn('LiveQueue'),arn('SimQueue')])]}],Events={'Pulse':{'Type':'Schedule','Properties':{'Schedule':'rate(1 minute)'}}}))
 resource('HttpApi','AWS::Serverless::HttpApi',{'Auth':{'DefaultAuthorizer':'Jwt','Authorizers':{'Jwt':{'IdentitySource':'$request.header.Authorization','JwtConfiguration':{'issuer':ref('JwtIssuer'),'audience':[ref('JwtAudience')]}}}}})
 events={}
-for i,(path,method,public) in enumerate([('/','GET',True),('/app.js','GET',True),('/style.css','GET',True),('/api/state','GET',False),('/api/history','GET',False),('/api/watering','GET',False),('/api/request','GET',False),('/api/watering','POST',False),('/api/watering/arm','POST',False),('/api/watering/disarm','POST',False),('/api/watering/reset','POST',False),('/api/water','POST',False),('/api/arm','POST',False),('/api/disarm','POST',False),('/api/reset_fault','POST',False)]):
+# Preserve the logical IDs of the existing private routes.
+for i,(path,method) in enumerate([('/api/state','GET'),('/api/history','GET'),('/api/watering','GET'),('/api/request','GET'),('/api/watering','POST'),('/api/watering/arm','POST'),('/api/watering/disarm','POST'),('/api/watering/reset','POST'),('/api/water','POST'),('/api/arm','POST'),('/api/disarm','POST'),('/api/reset_fault','POST')], start=3):
     props={'ApiId':ref('HttpApi'),'Path':path,'Method':method}
-    if public:props['Auth']={'Authorizer':'NONE'}
     events['Route'+str(i)]={'Type':'HttpApi','Properties':props}
 resource('Api','AWS::Serverless::Function',dict(CodeUri='.',Runtime='python3.12',Handler='aws.api.handler',Timeout=30,Environment={'Variables':{'HISTORY_TABLE':ref('History'),'IOT_DATA_ENDPOINT':ref('IoTDataEndpoint'),'BACKEND_GENERATION':ref('BackendGeneration'),'LIVE_QUEUE':ref('LiveQueue'),'SIM_QUEUE':ref('SimQueue')}},Policies=[{'Statement':[statement(['dynamodb:GetItem','dynamodb:Query','dynamodb:PutItem'],arn('History')),statement('sqs:SendMessage',[arn('LiveQueue'),arn('SimQueue')])]}],Events=events))
+demo_events = {
+    name: {'Type': 'HttpApi', 'Properties': {
+        'ApiId': ref('HttpApi'), 'Path': path, 'Method': 'GET',
+        'Auth': {'Authorizer': 'NONE'},
+    }}
+    for name, path in [('Home', '/'), ('Script', '/app.js'), ('Styles', '/style.css'),
+                       ('Telemetry', '/api/demo/telemetry')]
+}
+demo_read = statement('dynamodb:GetItem', arn('History'))
+demo_read['Condition'] = {'ForAllValues:StringEquals': {'dynamodb:LeadingKeys': ['live']},
+                          'Null': {'dynamodb:LeadingKeys': 'false'}}
+resource('Demo', 'AWS::Serverless::Function', dict(
+    CodeUri='.', Runtime='python3.12', Handler='aws.demo.handler', Timeout=5,
+    Environment={'Variables': {'HISTORY_TABLE': ref('History')}},
+    Policies=[{'Statement': [demo_read]}], Events=demo_events,
+))
 for mode,name in [('live','Live'),('simulated','Sim')]:
     R[name+'Worker']['Properties']['Policies'][0]['Statement'][0]['Condition']={'ForAllValues:StringEquals':{'dynamodb:LeadingKeys':[mode]}}
 for name,value in R.items():
