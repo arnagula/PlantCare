@@ -6,15 +6,39 @@
   <title>Plant Care Companion</title>
   <link rel="stylesheet" href="/style.css">
 </head>
-<body>
-  <header><h1>Plant Care Companion</h1><span id="modeBanner">Live plant</span></header>
-  <main>
-    <section aria-labelledby="state">
-      <p id="connection" role="status">Waiting for telemetry</p>
-      <h2 id="state">Unknown</h2>
+<body data-mode="live" data-health="unknown">
+  <header class="hero">
+    <!-- Golden pothos leaf: asymmetric heart, curved drip tip, arching veins, marbled streaks. -->
+    <svg class="hero-leaf" viewBox="0 0 240 300" aria-hidden="true" focusable="false">
+      <path class="leaf-stem" d="M118 250 C116 270 110 286 96 300"/>
+      <path class="leaf-blade" d="M118 250 C94 270 26 262 16 206 C6 148 52 84 110 40 C124 30 132 20 140 6 C140 22 138 30 144 40 C196 88 234 150 224 208 C214 262 146 270 118 250 Z"/>
+      <path class="leaf-marble" d="M64 214 C76 192 90 182 106 178 M152 176 C166 158 176 144 184 128 M98 126 C106 108 112 96 118 82 M150 224 C164 214 178 208 194 206 M54 172 C62 156 70 148 80 142 M170 112 C176 100 178 92 178 84"/>
+      <path class="leaf-vein" d="M118 250 C121 180 126 104 140 12 M120 204 C92 200 62 190 40 170 M123 156 C96 146 74 130 60 106 M128 110 C110 98 98 84 92 66 M121 204 C152 200 184 190 206 170 M124 156 C154 146 178 130 192 106 M129 110 C148 98 160 84 166 68"/>
+    </svg>
+    <div class="hero-top">
+      <div>
+        <p class="eyebrow">Team 3 · CSC 571</p>
+        <h1>Plant Care Companion</h1>
+      </div>
+      <div class="mode">
+        <span id="modeBanner">Live plant</span>
+        <div id="modeToggle" role="group" aria-label="Data source">
+          <button type="button" data-mode="live" aria-pressed="true">Live</button>
+          <button type="button" data-mode="simulated" aria-pressed="false">Simulation</button>
+        </div>
+      </div>
+    </div>
+    <section class="hero-status" aria-labelledby="state">
+      <p id="stateIcon" aria-hidden="true">❔</p>
+      <h2 id="state">Status unavailable</h2>
+      <p id="advice">Waiting for fresh readings from the sensor.</p>
+      <p class="badges"><span id="connection" role="status" data-status="waiting" title="Waiting for telemetry">Connecting…</span><span id="simBadge" hidden>Simulated data</span></p>
       <p id="sample" hidden></p>
-      <div id="metrics"></div>
     </section>
+  </header>
+  <main>
+    <div id="metrics" role="tablist" aria-label="Plant measurements"></div>
+    <section id="detail" role="tabpanel" aria-live="off"></section>
   </main>
   <script src="/app.js" defer></script>
 </body>
