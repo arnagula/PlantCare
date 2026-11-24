@@ -43,10 +43,10 @@ demo_events = {
                        ('Telemetry', '/api/demo/telemetry')]
 }
 demo_read = statement('dynamodb:GetItem', arn('History'))
-demo_read['Condition'] = {'ForAllValues:StringEquals': {'dynamodb:LeadingKeys': ['live']},
+demo_read['Condition'] = {'ForAllValues:StringEquals': {'dynamodb:LeadingKeys': ['live', 'simulated']},
                           'Null': {'dynamodb:LeadingKeys': 'false'}}
 resource('Demo', 'AWS::Serverless::Function', dict(
-    CodeUri='.', Runtime='python3.12', Handler='aws.demo.handler', Timeout=5,
+    CodeUri='.', Runtime='python3.12', Handler='aws.demo.handler', Timeout=15,
     Environment={'Variables': {'HISTORY_TABLE': ref('History')}},
     Policies=[{'Statement': [demo_read]}], Events=demo_events,
 ))

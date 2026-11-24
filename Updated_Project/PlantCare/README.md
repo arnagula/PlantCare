@@ -15,6 +15,8 @@ python -m tools.verify
 python -m aws.local_invoke
 python -m tools.run_demo
 python -m tools.run_demo --no-rise
+python -m tools.preview_dashboard   # dashboard with fake Live/Simulation data at http://localhost:8000
+python -m tools.preview_dashboard --data empty   # or: down, or aws --aws-url <deployed API URL>
 npm ci
 npm test
 cfn-lint template.yaml

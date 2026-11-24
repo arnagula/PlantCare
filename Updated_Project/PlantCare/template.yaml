@@ -1067,7 +1067,8 @@
                 "Condition": {
                   "ForAllValues:StringEquals": {
                     "dynamodb:LeadingKeys": [
-                      "live"
+                      "live",
+                      "simulated"
                     ]
                   },
                   "Null": {
