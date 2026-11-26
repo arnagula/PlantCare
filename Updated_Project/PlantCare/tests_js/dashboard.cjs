@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 
 async function testDashboard() {
   const html = fs.readFileSync('dashboard/index.html', 'utf8');
-  const dom = new JSDOM(html, { url: 'https://plant.test/', runScripts: 'outside-only' });
+  const dom = new JSDOM(html, { url: 'https://plant.test/', runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window;
   const calls = [];
   const timers = new Map();
@@ -138,10 +138,10 @@ async function testDashboard() {
     // History: one point per new sample, never per repeated fetch.
     assert.equal(detail().chart.querySelector('.chart-line'), null);
     assert.equal(temp.querySelector('.spark-line'), null);
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(detail().chart.querySelector('.chart-line'), null, 'same sample_time adds no point');
     snapshot = { ...snapshot, sample_time: '2026-11-12T15:01:00.000Z', readings: { ...snapshot.readings, temperature_c: 30 } };
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(detail().chart.querySelector('.chart-line').getAttribute('points').split(' ').length, 2);
     assert.equal(metricCard('temperature_c').querySelector('.spark-line').getAttribute('points').split(' ').length, 2);
     assert.equal(metricCard('temperature_c').querySelector('.spark-axis'), null, 'sparklines have no axis labels');
@@ -162,14 +162,14 @@ async function testDashboard() {
     timers.get(500)();
     assert.equal(w.document.getElementById('state').textContent, 'Status unavailable');
     assert.doesNotMatch(w.document.getElementById('metrics').textContent, /1500/);
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(w.document.getElementById('state').textContent, 'Needs water');
     snapshot = { mode: 'live', status: 'stale', readings: null };
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(w.document.getElementById('connection').textContent, 'Offline');
     assert.equal(w.document.getElementById('connection').dataset.status, 'stale');
     offline = true;
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(w.document.getElementById('connection').textContent, 'Connection error');
     assert.equal(w.document.getElementById('connection').dataset.status, 'error');
     offline = false;
@@ -218,7 +218,7 @@ async function testDashboard() {
       readings: { ...snapshot.readings, soil_pct: 55 },
       thresholds: { ...snapshot.thresholds, soil_pct: { low: 30, high: 80 } },
     };
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(w.document.getElementById('state').textContent, 'Healthy');
     assert.equal(w.document.getElementById('stateIcon').textContent, '😊');
     assert.equal(w.document.body.dataset.health, 'good');
@@ -228,16 +228,24 @@ async function testDashboard() {
 
     // Uncalibrated soil still counts as online; invalid readings show a partial-data badge.
     snapshot = { ...snapshot, status: 'uncalibrated' };
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(w.document.getElementById('connection').textContent, 'Online');
     snapshot = { ...snapshot, status: 'invalid' };
-    await timers.get(2000)();
+    await timers.get(30000)();
     assert.equal(w.document.getElementById('connection').textContent, 'Partial data');
     assert.equal(w.document.getElementById('connection').dataset.status, 'partial');
     if (process.env.TZ === 'UTC') {
       assert.equal(w.document.getElementById('sample').textContent, 'Last updated: 2026-11-12 3:00:00 PM');
     }
 
+    const beforeHide = calls.length;
+    Object.defineProperty(w.document, 'hidden', { configurable: true, value: true });
+    await timers.get(30000)();
+    assert.equal(calls.length, beforeHide, 'hidden tabs do not fetch');
+    Object.defineProperty(w.document, 'hidden', { configurable: true, value: false });
+    w.document.dispatchEvent(new w.Event('visibilitychange'));
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls.length, beforeHide + 1, 'visible tabs refresh immediately');
     assert.ok(calls.every(call => call.url.startsWith('/api/demo/telemetry?mode=') && call.options.method === 'GET'));
     console.log('Dashboard DOM tests passed');
   } finally {

@@ -469,7 +469,7 @@ function expireReadings() {
 }
 
 async function poll() {
-  if (inFlight) return;
+  if (document.hidden || inFlight) return;
   const current = generation;
   const requestedMode = mode;
   const controller = new AbortController();
@@ -537,5 +537,10 @@ for (const button of byId('modeToggle').querySelectorAll('button')) {
 createCards();
 renderReadings(null);
 poll();
-setInterval(poll, 2000);
+// Local USB and developer previews use a faster refresh without AWS API requests.
+const isLocalPreview = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+setInterval(poll, isLocalPreview ? 2000 : 30000);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) poll();
+});
 setInterval(expireReadings, 500);

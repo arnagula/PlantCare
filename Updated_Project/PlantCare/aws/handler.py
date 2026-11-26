@@ -1,11 +1,11 @@
-"""IoT ingress -> per-mode FIFO -> one durable state owner. No SQL/local production state."""
+"""Direct Live ingestion and FIFO Simulation ingestion."""
 import base64
 import json
 import os
 from pathlib import Path
 import time
 import uuid
-from plantcare.contracts import require
+from plantcare.contracts import integer, require
 from plantcare.profile import validate
 from plantcare.storage import DynamoStore
 from plantcare.service import Service
@@ -37,7 +37,12 @@ def ingress(event,context):
     if tail in ('watering/event','control/event'):
         require((tail=='watering/event')==(payload.get('action')=='water'),'event_topic')
     if tail.startswith('status/'): require(payload.get('client')==tail.split('/')[1],'status_client')
-    return enqueue(mode,'telemetry' if tail=='telemetry' else ('status' if tail.startswith('status/') else 'event'),payload)
+    kind = 'telemetry' if tail == 'telemetry' else ('status' if tail.startswith('status/') else 'event')
+    if mode == 'live':
+        received_ms = event.get('received_ms')
+        require(integer(received_ms, 1), 'received_ms')
+        return service(mode).handle(kind, payload, time.time(), received_ms / 1000)
+    return enqueue(mode, kind, payload)
 
 def worker(event,context):
     mode=os.environ['EXPECTED_MODE']; app=service(mode)

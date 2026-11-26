@@ -18,8 +18,24 @@ for mode,name in [('live','Live'),('simulated','Sim')]:
     resource(name+'Worker','AWS::Serverless::Function',dict(CodeUri='.',Runtime='python3.12',Handler='aws.handler.worker',Timeout=30,Environment={'Variables':variables},Policies=[{'Statement':[statement(['dynamodb:GetItem','dynamodb:PutItem'],arn('History')),statement('iot:Publish',pub),statement('iot:RetainPublish',pub[:2])]}],Events={'Queue':{'Type':'SQS','Properties':{'Queue':arn(name+'Queue'),'BatchSize':1,'Enabled':False}}}))
     events={}
     for i,tail in enumerate(('telemetry','watering/event','control/event','status/sensor','status/display')):
-        events['Topic'+str(i)]={'Type':'IoTRule','Properties':{'Sql':"SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM '"+prefix+tail+"'",'AwsIotSqlVersion':'2016-03-23'}}
-    resource(name+'Ingress','AWS::Serverless::Function',dict(CodeUri='.',Runtime='python3.12',Handler='aws.handler.ingress',Timeout=15,Environment={'Variables':variables},Policies=[{'Statement':[statement('sqs:SendMessage',arn(name+'Queue'))]}],Events=events))
+        sql = "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic"
+        if mode == 'live':
+            sql += ", timestamp() AS received_ms"
+        events['Topic'+str(i)] = {'Type':'IoTRule','Properties':{
+            'Sql':sql+" FROM '"+prefix+tail+"'",'AwsIotSqlVersion':'2016-03-23'}}
+    ingress = dict(CodeUri='.',Runtime='python3.12',Handler='aws.handler.ingress',
+                   Timeout=15,Environment={'Variables':variables},Events=events)
+    if mode == 'live':
+        # Serialize the state transaction and retained MQTT outbox publication.
+        database = statement(['dynamodb:GetItem','dynamodb:PutItem'],arn('History'))
+        database['Condition'] = {'ForAllValues:StringEquals':{'dynamodb:LeadingKeys':['live']}}
+        ingress.update(ReservedConcurrentExecutions=1,
+                       EventInvokeConfig={'MaximumEventAgeInSeconds':3600,'MaximumRetryAttempts':2},
+                       Policies=[{'Statement':[database, statement('iot:Publish',pub),
+                                               statement('iot:RetainPublish',pub)]}])
+    else:
+        ingress['Policies'] = [{'Statement':[statement('sqs:SendMessage',arn(name+'Queue'))]}]
+    resource(name+'Ingress','AWS::Serverless::Function',ingress)
     for role in ('sensor','display'):
         clientid='team3-'+('sim-' if mode=='simulated' else '')+role
         publishes=['status/'+role]+(['telemetry','watering/event','control/event'] if role=='sensor' else [])

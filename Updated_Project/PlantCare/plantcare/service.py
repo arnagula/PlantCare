@@ -108,7 +108,10 @@ class Service:
             elif kind=='status':
                 status(payload,self.mode)
                 if payload['ts'] is not None: require(timestamp(payload['ts'])<=now+5,'future_status')
-                state['connections'][payload['client']]={'payload':payload,'received_at':utc(now)}
+                received = now if received_at is None else received_at
+                prior = state['connections'].get(payload['client'])
+                if prior is None or received >= timestamp(prior['received_at']):
+                    state['connections'][payload['client']] = {'payload':payload,'received_at':utc(received)}
             elif kind=='request':
                 request_id=payload.get('request_id'); require(isinstance(request_id,str) and 0<len(request_id)<=64,'request_id')
                 key='REQUEST#'+request_id; prior=self.store.get(self.mode,key)

@@ -32,7 +32,7 @@ def dose(status, seq, **overrides):
     return {**payload, **overrides}
 
 
-def test_ingress_worker_history_and_dashboard():
+def test_direct_ingress_history_and_dashboard():
     store = MemoryStore()
     publish = Mock()
     app = Service(store, publish, default('live'))
@@ -41,12 +41,12 @@ def test_ingress_worker_history_and_dashboard():
     ), patch.object(handler.time, 'time', return_value=NOW+3):
         def ingest(tail, payload):
             event = dict(source_topic=PREFIX+tail,
+                         received_ms=int((NOW+3)*1000),
                          raw_payload=base64.b64encode(json.dumps(payload).encode()).decode())
-            def enqueue(mode, kind, payload):
-                body = json.dumps(dict(kind=kind, payload=payload, received_at=NOW+3))
-                return handler.worker({'Records':[{'body':body}]}, None)
-            with patch.object(handler, 'enqueue', side_effect=enqueue):
-                return handler.ingress(event, None)
+            with patch.object(handler, 'enqueue') as enqueue:
+                result = handler.ingress(event, None)
+                enqueue.assert_not_called()
+                return result
 
         assert ingest('telemetry',live_packet())['status']=='accepted'
         start, stop = dose('started',1), dose('completed',2)
@@ -54,6 +54,10 @@ def test_ingress_worker_history_and_dashboard():
         assert app.get_state(NOW+3)['watering']['pump_on'] is True
         assert ingest('watering/event',stop)['status']=='accepted'
         assert ingest('watering/event',stop)['status']=='duplicate'
+        late = live_packet()
+        late.update(seq=2, ts=utc(NOW-1))
+        assert ingest('telemetry',late)['reason']=='out_of_order_time'
+        assert app.get_state(NOW+3)['values']['seq']==1
 
     rows = store.history('live','LOG#',utc(NOW),utc(NOW+3))
     assert [row['status'] for row in rows]==['started','completed']
@@ -82,6 +86,11 @@ def test_bad_events_and_cloud_commands_are_rejected():
 def test_template_keeps_pollers_disabled():
     with open('template.yaml',encoding='utf-8') as template:
         resources = json.load(template)['Resources']
+    live = resources['LiveIngress']['Properties']
+    assert live['ReservedConcurrentExecutions'] == 1
+    assert 'timestamp() AS received_ms' in live['Events']['Topic0']['Properties']['Sql']
+    assert all(statement['Action'] != 'sqs:SendMessage'
+               for policy in live['Policies'] for statement in policy['Statement'])
     for worker in ('LiveWorker','SimWorker'):
         assert resources[worker]['Properties']['Events']['Queue']['Properties']['Enabled'] is False
     assert resources['Heartbeat']['Properties']['Events']['Pulse']['Properties']['Enabled'] is False

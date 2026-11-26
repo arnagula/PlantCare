@@ -219,59 +219,98 @@
             }
           }
         },
-        "Policies": [
-          {
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Action": "sqs:SendMessage",
-                "Resource": {
-                  "Fn::GetAtt": [
-                    "LiveQueue",
-                    "Arn"
-                  ]
-                }
-              }
-            ]
-          }
-        ],
         "Events": {
           "Topic0": {
             "Type": "IoTRule",
             "Properties": {
-              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/telemetry'",
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic, timestamp() AS received_ms FROM 'plantcare/team3/pothos1/telemetry'",
               "AwsIotSqlVersion": "2016-03-23"
             }
           },
           "Topic1": {
             "Type": "IoTRule",
             "Properties": {
-              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/watering/event'",
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic, timestamp() AS received_ms FROM 'plantcare/team3/pothos1/watering/event'",
               "AwsIotSqlVersion": "2016-03-23"
             }
           },
           "Topic2": {
             "Type": "IoTRule",
             "Properties": {
-              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/control/event'",
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic, timestamp() AS received_ms FROM 'plantcare/team3/pothos1/control/event'",
               "AwsIotSqlVersion": "2016-03-23"
             }
           },
           "Topic3": {
             "Type": "IoTRule",
             "Properties": {
-              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/status/sensor'",
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic, timestamp() AS received_ms FROM 'plantcare/team3/pothos1/status/sensor'",
               "AwsIotSqlVersion": "2016-03-23"
             }
           },
           "Topic4": {
             "Type": "IoTRule",
             "Properties": {
-              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic FROM 'plantcare/team3/pothos1/status/display'",
+              "Sql": "SELECT encode(*, 'base64') AS raw_payload, topic() AS source_topic, timestamp() AS received_ms FROM 'plantcare/team3/pothos1/status/display'",
               "AwsIotSqlVersion": "2016-03-23"
             }
           }
-        }
+        },
+        "ReservedConcurrentExecutions": 1,
+        "EventInvokeConfig": {
+          "MaximumEventAgeInSeconds": 3600,
+          "MaximumRetryAttempts": 2
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem"
+                ],
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "History",
+                    "Arn"
+                  ]
+                },
+                "Condition": {
+                  "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                      "live"
+                    ]
+                  }
+                }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "iot:Publish",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
+                  }
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": "iot:RetainPublish",
+                "Resource": [
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition"
+                  },
+                  {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "Metadata": {
         "BuildMethod": "makefile"
@@ -557,22 +596,6 @@
             }
           }
         },
-        "Policies": [
-          {
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Action": "sqs:SendMessage",
-                "Resource": {
-                  "Fn::GetAtt": [
-                    "SimQueue",
-                    "Arn"
-                  ]
-                }
-              }
-            ]
-          }
-        ],
         "Events": {
           "Topic0": {
             "Type": "IoTRule",
@@ -609,7 +632,23 @@
               "AwsIotSqlVersion": "2016-03-23"
             }
           }
-        }
+        },
+        "Policies": [
+          {
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "sqs:SendMessage",
+                "Resource": {
+                  "Fn::GetAtt": [
+                    "SimQueue",
+                    "Arn"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
       },
       "Metadata": {
         "BuildMethod": "makefile"

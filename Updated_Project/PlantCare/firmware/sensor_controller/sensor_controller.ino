@@ -80,7 +80,15 @@ void enqueueEvent(const Event&e){
  }
 }
 void sample(){
- readEnvironment();if(wall()<1704067200000LL)return;
+ readEnvironment();
+ JsonDocument environment;
+ metric(environment["temperature_c"].to<JsonObject>(),temp,-40,85);
+ metric(environment["humidity_pct"].to<JsonObject>(),rh,0,100);
+ metric(environment["light_lux"].to<JsonObject>(),lux,0,200000);
+ Serial.print("ENV ");
+ serializeJson(environment,Serial);
+ Serial.println();
+ if(wall()<1704067200000LL)return;
  JsonDocument j;j["schema"]=1;j["mode"]="live";j["profile"]=settings::profile;j["device_id"]="sensor-01";j["boot_id"]=bootId;j["seq"]=++seq;j["ts"]=stamp(wall());j["uptime_ms"]=mono();j["sample_interval_s"]=mono()<observeUntil?10:settings::sampleMs/1000;j["config_id"]=settings::config().id;
  metric(j["temperature_c"].to<JsonObject>(),temp,-40,85);metric(j["humidity_pct"].to<JsonObject>(),rh,0,100);metric(j["light_lux"].to<JsonObject>(),lux,0,200000);
  auto s=j["soil"].to<JsonObject>();if(soilValid)s["raw"]=raw;else s["raw"]=nullptr;s["raw_valid"]=soilValid;s["calibrated"]=settings::calibrated;s["valid"]=isfinite(pct);if(isfinite(pct))s["pct"]=pct;else s["pct"]=nullptr;if(settings::calibrated)s["calibration_id"]=settings::calibrationId;else s["calibration_id"]=nullptr;
