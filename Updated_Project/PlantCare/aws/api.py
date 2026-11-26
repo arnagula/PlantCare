@@ -28,6 +28,7 @@ def handler(event,context):
             return response(200,{'rows':rows,'cursor':cursor})
         actions={'/api/watering':'water','/api/watering/arm':'arm','/api/watering/disarm':'disarm','/api/watering/reset':'reset_fault','/api/water':'water','/api/arm':'arm','/api/disarm':'disarm','/api/reset_fault':'reset_fault'}
         if method=='POST' and path in actions:
+            if mode=='live':return response(409,{'error':'local_control_only'})
             require(not event.get('isBase64Encoded'),'encoding');raw=event.get('body','');require(len(raw.encode())<=4096,'size');p=json.loads(raw)
             require(isinstance(p,dict) and set(p)<= {'request_id','inspected'},'request_fields')
             request_id=p.get('request_id');require(isinstance(request_id,str) and 0<len(request_id)<=64,'request_id')

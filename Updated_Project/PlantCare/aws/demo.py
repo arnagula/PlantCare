@@ -8,6 +8,7 @@ import time
 from plantcare.contracts import number, timestamp, utc
 from plantcare.engine import Engine, RULES
 from plantcare.storage import DynamoStore
+from plantcare.service import local_watering
 from .http import response
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -80,7 +81,7 @@ def snapshot(state, now, mode='live'):
     }
     condition = assessment['state']
     sample_time = timestamp(sample['ts'])
-    return {
+    result = {
         'mode': mode,
         'status': status,
         'condition': condition if condition in RULES or condition == 'happy' else 'unknown',
@@ -92,6 +93,14 @@ def snapshot(state, now, mode='live'):
         },
         'thresholds': public_thresholds(profile),
     }
+    stage, latest = local_watering(state, sample)
+    if stage or latest:
+        result['watering'] = {'stage': stage}
+        if latest:
+            result['watering']['last_event'] = {
+                key: latest[key] for key in ('status','ts','actual_duration_ms') if key in latest
+            }
+    return result
 
 
 def handler(event, context):

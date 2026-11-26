@@ -1,6 +1,6 @@
 # Plant Care Companion — AWS implementation candidate
 
-This revision implements the master v2.0 behavior using AWS IoT Core, FIFO SQS, Lambda, DynamoDB and an authenticated HTTP API. **AWS has not been deployed. Live calibration and watering remain unqualified. Physical acceptance and the original PlantFace GUI integration are outstanding.** This is a software candidate, not an accepted watering installation.
+The XIAO runs one bottom-watering dose per boot. AWS carries its telemetry and watering history. See [Bottom-watering setup](docs/BOTTOM_WATERING.md) for flashing, bench verification and AWS rollout. Live thresholds are provisional and physical acceptance is pending.
 
 ## Reproduce locally
 
@@ -42,7 +42,7 @@ python -m tools.generate_firmware_config
 pio run
 ```
 
-`platformio.ini` pins the board platform, Arduino framework and libraries. A template credential file is enough to compile, not to connect. Credentials are excluded from deliverable and Lambda packaging. GPIO2 is assumed active HIGH; establish actual relay OFF polarity on the bench. GPIO5/GPIO6 are I2C SDA/SCL.
+`platformio.ini` pins the board platform, Arduino framework and libraries. A template credential file is enough to compile, not to connect. Credentials are excluded from deliverable and Lambda packaging. GPIO3 (XIAO D2) is active HIGH; establish actual relay OFF polarity on the bench. GPIO5/GPIO6 are I2C SDA/SCL.
 
 The serial CSV logger remains available for the original human-readable acquisition sketch at `firmware/Plant_Care_Companion_Sensors`. The production controller instead emits `PUBLISHED` packet identities for completeness evidence. Do not mix those serial protocols.
 
@@ -56,7 +56,7 @@ The serial CSV logger remains available for the original human-readable acquisit
 
 ## Simulation
 
-Live and simulated messages use the same engine/coordinator. `tools.run_demo` proves a deterministic local transaction. For AWS replay, install the dev requirements, provision the distinct `team3-sim-sensor` certificate/policy, and run:
+Live and simulated messages share the condition engine. Simulation retains the backend watering coordinator. `tools.run_demo` proves a deterministic local transaction. For AWS replay, install the dev requirements, provision the distinct `team3-sim-sensor` certificate/policy, and run:
 
 ```sh
 python -m tools.scenario_publisher --endpoint YOUR_ATS_ENDPOINT --ca AmazonRootCA1.pem --cert sim.crt --key sim.key --scenario dry_response --seconds 90

@@ -7,6 +7,21 @@ from .engine import Engine, empty_rule
 from .watering import Watering, ACTIVE
 from .profile import validate
 
+def local_watering(state, sample):
+    """Overlay newer events for pulses that finish between telemetry samples."""
+    if not sample:
+        return None, None
+    stage = sample['pump'].get('local_stage')
+    latest = state.get('local_event')
+    if not latest or latest['boot_id'] != sample['boot_id']:
+        return stage, None
+    if timestamp(latest['ts']) > timestamp(sample['ts']):
+        stage = {'started':'running', 'completed':'soaking', 'aborted':'fault'}[latest['status']]
+        if latest['reason_code'] == 'local_stop':
+            stage = 'stopped'
+    return stage, latest
+
+
 class Service:
     def __init__(self,store,publish,profile,generation='deployment-1'):
         self.store=store; self.publish=publish; self.profile=validate(profile); self.mode=profile['mode']; self.generation=generation
@@ -19,11 +34,20 @@ class Service:
         state=self.load()
         if not state['outbox']: return
         for item in state['outbox']:
+            if self.mode=='live' and item['topic'].endswith('/command'):
+                continue
             self.publish(item['topic'],item['payload'],item['retain'])
         state['outbox']=[]
         self.store.commit(self.mode,state['version'],state,{})
     def report(self,state,engine,water,now):
         s=engine.state['sample']; report=engine.assess(now); watering=water.snapshot(now)
+        stage, latest = local_watering(state, s)
+        if stage and report['data_status'] != 'stale':
+            watering.update(stage={'monitoring':'READY','running':'RUNNING','soaking':'OBSERVING',
+                                   'complete':'DISARMED','stopped':'DISARMED','fault':'FAULT'}[stage],
+                            pump_on=stage=='running', fault='local_fault' if stage=='fault' else None,
+                            command_id=(latest or {}).get('command_id') or s['pump']['active_command_id'],
+                            cooldown_remaining_s=0)
         if watering['stage']=='FAULT': report.update(state='watering_fault',mood='sad',reason=('Check watering system: inspect reservoir, tubing and sensor. Low rise is a heuristic.' if watering['fault']=='insufficient_rise' else watering['fault']))
         elif watering['stage'] in ('COMMAND_PENDING','RUNNING'): report.update(state='watering',mood='regular',reason='Watering transaction in progress')
         elif watering['stage']=='OBSERVING': report.update(state='checking_moisture',mood='regular',reason='Checking post-dose moisture rise')
@@ -47,7 +71,8 @@ class Service:
                     require(old['payload']==payload,'conflicting_duplicate')
                     return {'status':'duplicate'}
                 engine.update(payload,now); sample=engine.state['sample']
-                water.state['profile']=sample['profile']; water.sample(sample,now)
+                if self.mode=='simulated':
+                    water.state['profile']=sample['profile']; water.sample(sample,now)
                 records[identity]=dict(payload=payload,ts=payload['ts'],received_at=utc(received_at if received_at is not None else now))
                 values={k:(payload[k]['value'],payload[k]['valid']) for k in ('temperature_c','humidity_pct','light_lux')}
                 values.update(soil_raw=(payload['soil']['raw'],payload['soil']['raw_valid']),soil_pct=(payload['soil']['pct'],payload['soil']['valid']))
@@ -61,15 +86,21 @@ class Service:
                 old=self.store.get(self.mode,identity)
                 if old:
                     require(old==payload,'conflicting_event'); return {'status':'duplicate'}
-                known=self.store.get(self.mode,'COMMANDID#'+payload['command_id'])
-                require(known is not None and known['target_boot_id']==payload['boot_id'] and known['action']==payload['action'],'unknown_event')
-                current=water.state['command'] if payload['action']=='water' else water.state['control']
-                if current and current['command_id']==payload['command_id']:
-                    previous=water.dump()
-                    try:water.event(payload,now)
-                    except (Rejected,KeyError,TypeError,ValueError):
-                        water=Watering(self.profile,previous)
-                        raise
+                if payload.get('source')=='device':
+                    previous = state.get('local_event')
+                    rank = lambda item: (timestamp(item['ts']), item['event_seq'])
+                    if previous is None or rank(payload)>rank(previous):
+                        state['local_event']=payload
+                else:
+                    known=self.store.get(self.mode,'COMMANDID#'+payload['command_id'])
+                    require(known is not None and known['target_boot_id']==payload['boot_id'] and known['action']==payload['action'],'unknown_event')
+                    current=water.state['command'] if payload['action']=='water' else water.state['control']
+                    if current and current['command_id']==payload['command_id']:
+                        previous=water.dump()
+                        try:water.event(payload,now)
+                        except (Rejected,KeyError,TypeError,ValueError):
+                            water=Watering(self.profile,previous)
+                            raise
                 records[identity]=payload
                 stored_event={**payload,'received_at':utc(received_at if received_at is not None else now)}
                 records['EVENT#'+payload['ts']+'#'+identity]=stored_event
@@ -83,6 +114,7 @@ class Service:
                 key='REQUEST#'+request_id; prior=self.store.get(self.mode,key)
                 if prior:
                     require(prior['request']==payload,'request_id_conflict'); return prior['result']
+                require(self.mode=='simulated','local_control_only')
                 cmd=water.request(payload.get('action'),sample,now,request_id,payload.get('inspected') is True)
                 result={'status':'queued','command_id':cmd['command_id']}
                 records[key]=dict(ts=utc(now),request=payload,result=result)
@@ -105,9 +137,9 @@ class Service:
             if kind=='request' and isinstance(payload,dict) and isinstance(payload.get('request_id'),str) and 0<len(payload['request_id'])<=64 and self.store.get(self.mode,'REQUEST#'+payload['request_id']) is None:
                 records['REQUEST#'+payload['request_id']]=dict(ts=utc(now),request=payload,result=result)
         before=initial_stage
-        if water.tick(sample,now): engine.state['rules']['thirsty']=empty_rule()
+        if self.mode=='simulated' and water.tick(sample,now): engine.state['rules']['thirsty']=empty_rule()
         assessed=engine.assess(now)
-        if water.state['stage']=='READY' and 'thirsty' in assessed['issues'] and assessed['data_status']=='ok' and not water.block('water',sample,now):
+        if self.mode=='simulated' and water.state['stage']=='READY' and 'thirsty' in assessed['issues'] and assessed['data_status']=='ok' and not water.block('water',sample,now):
             cmd=water.request('water',sample,now,'auto-'+str(uuid.uuid4()),automatic=True)
             records['COMMAND#'+utc(now)+'#'+cmd['command_id']]=cmd
             records['COMMANDID#'+cmd['command_id']]=cmd
@@ -130,5 +162,5 @@ class Service:
     def get_state(self,now):
         state=self.load(); self.profile=validate(state.get('profile',self.profile)); engine=Engine(self.profile,state['engine']); water=Watering(self.profile,state['water'])
         report=self.report(state,engine,water,now); sample=engine.state['sample']
-        report.update(values=sample,connections=state['connections'],availability={a:water.block(a,sample,now,a=='reset_fault') for a in ('water','arm','disarm','reset_fault')})
+        report.update(values=sample,connections=state['connections'],availability={a:('local_control_only' if self.mode=='live' else water.block(a,sample,now,a=='reset_fault')) for a in ('water','arm','disarm','reset_fault')})
         return report

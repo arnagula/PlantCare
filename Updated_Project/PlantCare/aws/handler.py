@@ -33,7 +33,9 @@ def ingress(event,context):
     tail=topic[len(prefix):]
     require(tail in ('telemetry','watering/event','control/event','status/sensor','status/display'),'topic')
     raw=base64.b64decode(event['raw_payload'],validate=True); require(len(raw)<=4096,'wire_size')
-    payload=json.loads(raw);require(payload.get('mode')==mode,'mode')
+    payload=json.loads(raw);require(isinstance(payload,dict) and payload.get('mode')==mode,'mode')
+    if tail in ('watering/event','control/event'):
+        require((tail=='watering/event')==(payload.get('action')=='water'),'event_topic')
     if tail.startswith('status/'): require(payload.get('client')==tail.split('/')[1],'status_client')
     return enqueue(mode,'telemetry' if tail=='telemetry' else ('status' if tail.startswith('status/') else 'event'),payload)
 
