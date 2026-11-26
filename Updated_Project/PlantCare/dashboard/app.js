@@ -432,7 +432,29 @@ function formatTime(date) {
     + (date.getHours() < 12 ? 'AM' : 'PM');
 }
 
+function renderWatering(watering, raw) {
+  const target = byId('wateringActivity');
+  const labels = new Map([
+    ['monitoring', 'Monitoring soil'], ['running', 'Watering'],
+    ['soaking', 'Soaking'], ['complete', 'Cycle complete'],
+    ['stopped', 'Watering stopped locally'], ['fault', 'Watering fault'],
+  ]);
+  const label = labels.get(watering?.stage);
+  const parts = label ? [label] : [];
+  if (label && Number.isFinite(raw)) parts.push('Soil sensor ' + raw + ' raw');
+  const event = watering?.last_event;
+  if (event?.status === 'completed' && Number.isFinite(event.actual_duration_ms)) {
+    const time = new Date(event.ts);
+    if (!Number.isNaN(time.getTime())) {
+      parts.push('Last dose ' + (event.actual_duration_ms / 1000).toFixed(2) + ' s at ' + formatTime(time));
+    }
+  }
+  target.textContent = parts.join(' · ');
+  target.hidden = !parts.length;
+}
+
 function clearReadings(kind) {
+  renderWatering(null, null);
   expiresAt = 0;
   renderCondition('unknown');
   setConnection(kind);
@@ -480,6 +502,7 @@ async function poll() {
     byId('sample').hidden = false;
     recordSample(sampleTime, telemetry.readings);
     renderReadings(telemetry.readings);
+    renderWatering(telemetry.watering, telemetry.readings?.soil_raw);
   } catch {
     if (current === generation) clearReadings('error');
   } finally {

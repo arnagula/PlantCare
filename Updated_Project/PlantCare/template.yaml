@@ -153,12 +153,6 @@
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/condition"
                   },
                   {
-                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/watering/command"
-                  },
-                  {
-                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/control/command"
-                  },
-                  {
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/backend"
                   }
                 ]
@@ -188,7 +182,8 @@
                   "Arn"
                 ]
               },
-              "BatchSize": 1
+              "BatchSize": 1,
+              "Enabled": false
             }
           }
         }
@@ -319,30 +314,6 @@
               "Resource": [
                 {
                   "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/status/sensor"
-                }
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": "iot:Subscribe",
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/pothos1/watering/command"
-                },
-                {
-                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topicfilter/plantcare/team3/pothos1/control/command"
-                }
-              ]
-            },
-            {
-              "Effect": "Allow",
-              "Action": "iot:Receive",
-              "Resource": [
-                {
-                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/watering/command"
-                },
-                {
-                  "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/pothos1/control/command"
                 }
               ]
             }
@@ -514,13 +485,13 @@
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/condition"
                   },
                   {
+                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/backend"
+                  },
+                  {
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/watering/command"
                   },
                   {
                     "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/control/command"
-                  },
-                  {
-                    "Fn::Sub": "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/plantcare/team3/sim/pothos1/status/backend"
                   }
                 ]
               },
@@ -549,7 +520,8 @@
                   "Arn"
                 ]
               },
-              "BatchSize": 1
+              "BatchSize": 1,
+              "Enabled": false
             }
           }
         }
@@ -815,7 +787,8 @@
           "Pulse": {
             "Type": "Schedule",
             "Properties": {
-              "Schedule": "rate(1 minute)"
+              "Schedule": "rate(1 minute)",
+              "Enabled": false
             }
           }
         }

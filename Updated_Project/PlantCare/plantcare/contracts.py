@@ -70,6 +70,13 @@ def telemetry(p, mode=None, now=None):
     for key in ('fault', 'active_command_id'):
         require(key in pump and (pump[key] is None or ident(pump[key])), 'pump.' + key)
     require(number(pump.get('cooldown_remaining_s'), 0), 'cooldown_remaining_s')
+    if 'local_stage' in pump:
+        stage = pump['local_stage']
+        require(p['mode'] == 'live' and p['device_id'] == 'sensor-01', 'local_device')
+        require(stage in ('monitoring','running','soaking','complete','stopped','fault'), 'local_stage')
+        require(pump['on'] == (stage == 'running') and pump['armed'] == (stage == 'monitoring'), 'local_pump')
+        require((pump['active_command_id'] is not None) == pump['on'], 'local_cycle')
+        require(not s['raw_valid'] or 500 <= s['raw'] <= 1100, 'local_soil_range')
     return p
 
 def command(p, mode=None):
@@ -98,6 +105,23 @@ def event(p, mode=None):
     statuses = ('started', 'completed', 'rejected', 'aborted') if p['action'] == 'water' else ('accepted', 'rejected')
     require(p.get('status') in statuses, 'status')
     require(type(p.get('pump_on')) is bool, 'pump_on')
+    if 'source' in p:
+        require(p['source']=='device' and p['mode']=='live' and p['device_id']=='sensor-01', 'event_source')
+        require(p['action']=='water' and p['status']!='rejected', 'local_action')
+        require(p['command_id']==p['boot_id']+'-water', 'local_cycle')
+        require(p['pump_on']==(p['status']=='started'), 'local_pump')
+        raw = p.get('soil_raw')
+        require('soil_raw' in p and (raw is None or (integer(raw,500) and raw<=1100)), 'local_soil_range')
+        require('reason_code' in p, 'reason_code')
+        reason = p['reason_code']
+        if p['status']=='started':
+            require(raw is not None and raw<760 and reason is None and 'actual_duration_ms' not in p, 'local_start')
+        else:
+            duration = p.get('actual_duration_ms')
+            require(integer(duration) and duration<=60000, 'duration')
+            require(reason in ('local_stop','moisture_invalid','storage_failed','start_failed')
+                    if p['status']=='aborted' else reason is None, 'reason_code')
+        return p
     if p['action']!='water' and p['status']=='accepted':require(p['pump_on'] is False,'control_pump_off')
     require('reason_code' in p and (p['reason_code'] in REASONS if p['status'] == 'rejected' else p['reason_code'] is None or ident(p['reason_code'])), 'reason_code')
     if p['status'] == 'started':
